@@ -14,7 +14,7 @@ clear
 ipsaya=$(curl -sS ipv4.icanhazip.com)
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
-data_ip="https://raw.githubusercontent.com/welwel11/izin/main/izin"
+data_ip="https://raw.githubusercontent.com/rendiap100/izin/main/izin"
 checking_sc() {
   useexp=$(wget -qO- $data_ip | grep $ipsaya | awk '{print $3}')
   if [[ $date_list < $useexp ]]; then
@@ -73,7 +73,7 @@ menu-system
 ;;
 3 | 03)
 clear
-wget -q -O /tmp/nameserver "https://raw.githubusercontent.com/welwel11/project2/main/slowdns/nameserver" >/dev/null 2>&1
+wget -q -O /tmp/nameserver "https://raw.githubusercontent.com/rendiap100/sshmax-new2/main/slowdns/nameserver" >/dev/null 2>&1
 chmod +x /tmp/nameserver
 bash /tmp/nameserver | tee /root/install.log
 echo ""

@@ -10,13 +10,13 @@ NC='\e[0m'
 apt update && apt upgrade
 apt install python3 python3-pip git
 cd /usr/bin
-wget https://raw.githubusercontent.com/welwel11/project2/main/bot/bot.zip
+wget https://raw.githubusercontent.com/rendiap100/sshmax-new2/main/bot/bot.zip
 unzip bot.zip
 mv bot/* /usr/bin
 chmod +x /usr/bin/*
 rm -rf bot.zip
 clear
-wget https://raw.githubusercontent.com/welwel11/project2/main/bot/kyt.zip
+wget https://raw.githubusercontent.com/rendiap100/sshmax-new2/main/bot/kyt.zip
 unzip kyt.zip
 pip3 install -r kyt/requirements.txt
 

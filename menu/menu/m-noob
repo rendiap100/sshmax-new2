@@ -58,7 +58,7 @@ function garis() {
 echo -e "${CY}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈${NC}"
 }
 
-url_izin="https://raw.githubusercontent.com/welwel11/izin/main/izin"
+url_izin="https://raw.githubusercontent.com/rendiap100/izin/main/izin"
 ipsaya=$(curl -sS ipv4.icanhazip.com)
 data_server=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 date_list=$(date +"%Y-%m-%d" -d "$data_server")
@@ -92,10 +92,10 @@ read -p " Sandi : " pass
 read -p " Masa Aktif : " exp
 read -p " Batas IP : " ip
 
-if [ ! -e /etc/welwel11/limit/noobs/ip/ ]; then
-  mkdir -p /etc/welwel11/limit/noobs/ip/
+if [ ! -e /etc/rendiap100/limit/noobs/ip/ ]; then
+  mkdir -p /etc/rendiap100/limit/noobs/ip/
 fi
-echo "$ip" > /etc/welwel11/limit/noobs/ip/$user
+echo "$ip" > /etc/rendiap100/limit/noobs/ip/$user
 
 noobzvpns --add-user $user $pass --expired-user $user $exp
 
