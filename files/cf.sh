@@ -12,10 +12,10 @@ echo ""
 
 # Input subdomain dari user
 read -rp "Masukan Nama Domain: " -e sub
-DOMAIN=jnstore.biz.id
-SUB_DOMAIN=${sub}.jnstore.biz.id
-CF_ID=jonijoni199210@gmail.com
-CF_KEY=b3179931dedce6aaad8692d44422639b81921
+DOMAIN=sshmax.my.id
+SUB_DOMAIN=${sub}.sshmax.my.id
+CF_ID=rendiap100@gmail.com
+CF_KEY=2ce0b48ecb650a119639825cc486d5ac4e211
 set -euo pipefail
 IP=$(curl -sS ifconfig.me)
 
