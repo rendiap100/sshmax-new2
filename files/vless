@@ -7,7 +7,7 @@ TIME="10"
 URL="https://api.telegram.org/bot$KEY/sendMessage"
 TEXT="
 <code>────────────────────</code>
-<b>⚠️NOTIF QUOTA HABIS XRAY VMESS⚠️</b>
+<b>⚠️NOTIF QUOTA HABIS XRAY VLESS⚠️</b>
 <code>────────────────────</code>
 <code>Username  : </code><code>$user</code>
 <code>limit Quota : </code><code>$total2</code>
@@ -31,11 +31,12 @@ function con() {
 }
 
 
+
   while true; do
   sleep 5
-  data=($(cat /etc/xray/config.json | grep '^###' | cut -d ' ' -f 2 | sort | uniq))
-  if [[ ! -e /etc/limit/vmess ]]; then
-  mkdir -p /etc/limit/vmess
+  data=($(cat /etc/xray/config.json | grep '^#&' | cut -d ' ' -f 2 | sort | uniq))
+  if [[ ! -e /etc/limit/vless ]]; then
+  mkdir -p /etc/limit/vless
   fi
   for user in ${data[@]}
   do
@@ -43,18 +44,18 @@ function con() {
   getThis=$(cat /tmp/${user} | awk '{print $1}');
   if [[ ${getThis} != "failed" ]]; then
         downlink=$(xray api stats --server=127.0.0.1:10000 -name "user>>>${user}>>>traffic>>>downlink" | grep -w "value" | awk '{print $2}' | cut -d '"' -f2);
-        if [ -e /etc/limit/vmess/${user} ]; then
-        plus2=$(cat /etc/limit/vmess/${user});
+        if [ -e /etc/limit/vless/${user} ]; then
+        plus2=$(cat /etc/limit/vless/${user});
         if [[ ${#plus2} -gt 0 ]]; then
         plus3=$(( ${downlink} + ${plus2} ));
-        echo "${plus3}" > /etc/limit/vmess/"${user}"
+        echo "${plus3}" > /etc/limit/vless/"${user}"
         xray api stats --server=127.0.0.1:10000 -name "user>>>${user}>>>traffic>>>downlink" -reset > /dev/null 2>&1
         else
-        echo "${downlink}" > /etc/limit/vmess/"${user}"
+        echo "${downlink}" > /etc/limit/vless/"${user}"
         xray api stats --server=127.0.0.1:10000 -name "user>>>${user}>>>traffic>>>downlink" -reset > /dev/null 2>&1
         fi
         else
-        echo "${downlink}" > /etc/limit/vmess/"${user}"
+        echo "${downlink}" > /etc/limit/vless/"${user}"
         xray api stats --server=127.0.0.1:10000 -name "user>>>${user}>>>traffic>>>downlink" -reset > /dev/null 2>&1
         fi
         else
@@ -64,24 +65,23 @@ done
 # Check ur Account
 for user in ${data[@]}
   do
-    if [ -e /etc/vmess/${user} ]; then
-      checkLimit=$(cat /etc/vmess/${user});
+    if [ -e /etc/vless/${user} ]; then
+      checkLimit=$(cat /etc/vless/${user});
       if [[ ${#checkLimit} -gt 1 ]]; then
-      if [ -e /etc/limit/vmess/${user} ]; then
-      Usage=$(cat /etc/limit/vmess/${user});
+      if [ -e /etc/limit/vless/${user} ]; then
+      Usage=$(cat /etc/limit/vless/${user});
+      if [[ ${Usage} -gt ${checkLimit} ]]; then
       total=$(con ${Usage})
       total2=$(con ${checkLimit})
-      if [[ ${Usage} -gt ${checkLimit} ]]; then
-      exp=$(grep -w "^### $user" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
-      sed -i "/^### $user $exp/,/^},{/d" /etc/xray/config.json
-      sed -i "/^### $user $exp/d" /etc/vmess/.vmess.db
+      exp=$(grep -w "^#& $user" "/etc/xray/config.json" | cut -d ' ' -f 3 | sort | uniq)
+      sed -i "/^#& $user $exp/,/^},{/d" /etc/xray/config.json
+      sed -i "/^#& $user $exp/d" /etc/vless/.vless.db
       send-log
-      rm -rf /etc/limit/vmess/${user}
-      rm -f /etc/kyt/limit/vmess/ip/$user
-	  rm -f /etc/vmess/$user
-	  rm -f /etc/limit/vmess/$user
-	  rm -f /etc/limit/vmess/quota/$user
-	  rm -f /var/www/html/vmess-$user.txt
+      rm -f /etc/funny/limit/vless/ip/$user
+	  rm -f /etc/vless/$user
+	  rm -f /etc/limit/vless/$user
+	  rm -f /etc/limit/vless/quota/$user
+	  rm -f /var/www/html/vless-$user.txt
       systemctl restart xray >> /dev/null 2>&1
       else
       echo ""
