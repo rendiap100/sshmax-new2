@@ -35,20 +35,16 @@ clear
 
 clear
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━━━━━━━◈ ${NC}"
-echo -e "                     MENU SYSTEM              "
+echo -e "                  MENU SYSTEM              "
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━━━━━━━◈ ${NC}"
-echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━━━━━━━◈ ${NC}"
-echo -e "$NC   [${Lgreen}01${NC}]. INSTALL NOOBZVPN    $NC[${Lgreen}09${NC}]. REBOOT VPS"
-echo -e "$NC   [${Lgreen}02${NC}]. INSTALL UDP CUSTOM  $NC[${Lgreen}09${NC}]. REBOOT VPS"
-echo -e "$NC   [${Lgreen}03${NC}]. INSTALL SLOWDNS     $NC[${Lgreen}11${NC}]. BERSIHKAN CACHE"
-echo -e "$NC   [${Lgreen}04${NC}]. MENU AUTO REBOOT    $NC[${Lgreen}12${NC}]. RUNNING"
-echo -e "$NC   [${Lgreen}05${NC}]. MENU SPEEDTES$NC       $NC[${Lgreen}13${NC}]. LOG ACCOUNT"
-echo -e "$NC   [${Lgreen}06${NC}]. MENU BOT TELEGRAM   $NC[${Lgreen}14${NC}]. FIX CERT SSL"
-echo -e "$NC   [${Lgreen}07${NC}]. CHANGE BANNER       $NC[${Lgreen}15${NC}]. MENU DELL USER EXP"
-echo -e "$NC   [${Lgreen}08${NC}]. WAKTU REBOOT        $NC[${Lgreen}16${NC}]. MEDIA CHECKER"
-echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━━━━━━━◈ ${NC}"
-echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━━━━━━━◈ ${NC}"
-echo -e "                   🇯‌🇳‌🇸‌🇹‌🇴‌🇷‌🇪‌        "
+echo -e "$NC   [${PURPLE}01${NC}]. INSTALL NOOBZVPN    $NC[${PURPLE}09${NC}]. REBOOT VPS"
+echo -e "$NC   [${PURPLE}02${NC}]. INSTALL UDP CUSTOM  $NC[${PURPLE}10${NC}]. RENEW DOMAIN"
+echo -e "$NC   [${PURPLE}03${NC}]. INSTALL SLOWDNS     $NC[${PURPLE}11${NC}]. BERSIHKAN CACHE"
+echo -e "$NC   [${PURPLE}04${NC}]. MENU AUTO REBOOT    $NC[${PURPLE}12${NC}]. RUNNING"
+echo -e "$NC   [${PURPLE}05${NC}]. MENU SPEEDTES$NC       $NC[${PURPLE}13${NC}]. LOG ACCOUNT"
+echo -e "$NC   [${PURPLE}06${NC}]. MENU BOT TELEGRAM   $NC[${PURPLE}14${NC}]. FIX CERT SSL"
+echo -e "$NC   [${PURPLE}07${NC}]. CHANGE BANNER       $NC[${PURPLE}15${NC}]. MENU DELL USER EXP"
+echo -e "$NC   [${PURPLE}08${NC}]. WAKTU REBOOT        $NC[${PURPLE}16${NC}]. MEDIA CHECKER"
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━━━━━━━◈ ${NC}"
 read -p " MENU : " opt
 echo -e ""
@@ -73,7 +69,7 @@ menu-system
 ;;
 3 | 03)
 clear
-wget -q -O /tmp/nameserver "https://raw.githubusercontent.com/rendiap100/sshmax-new2/main/slowdns/nameserver" >/dev/null 2>&1
+wget -q -O /tmp/nameserver "https://raw.githubusercontent.com/rendiap100/sshmax-new/main/slowdns/nameserver" >/dev/null 2>&1
 chmod +x /tmp/nameserver
 bash /tmp/nameserver | tee /root/install.log
 echo ""
@@ -109,7 +105,7 @@ reboot
 ;;
 10 | 010)
 clear
-clearcache
+addhost
 ;;
 11 | 011)
 clear

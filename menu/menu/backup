@@ -20,17 +20,21 @@ clear
 IP=$(curl -sS ipv4.icanhazip.com)
 domain=$(cat /etc/xray/domain)
 date=$(date +"%Y-%m-%d")
+#clear
+#email=$(cat /root/email)
+#if [[ "$email" = "" ]]; then
+#echo "Masukkan Email Untuk Menerima Backup"
+#read -rp "Email : " -e email
+#cat <<EOF>>/root/email
+#$email
+#EOF
+#fi
 clear
-email=$(cat /root/email)
-if [[ "$email" = "" ]]; then
-echo "Masukkan Email Untuk Menerima Backup"
-read -rp "Email : " -e email
-cat <<EOF>>/root/email
-$email
-EOF
-fi
-clear
-echo "Mohon Menunggu , Proses Backup sedang berlangsung !!"
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo "          BACKUP DATA VPS   "
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo -e "${PURPLE}◈━━━━━━━◈◈━━━━━━━━◈ ${NC}"
+echo " Proses Backup ...   "
 rm -rf /root/backup
 mkdir /root/backup
 cp /etc/passwd backup/
@@ -42,19 +46,20 @@ cp -r /var/lib/kyt/ backup/kyt
 cp -r /etc/xray backup/xray
 cp -r /var/www/html/ backup/html
 cd /root
-zip -r $IP-$date.zip backup > /dev/null 2>&1
-rclone copy /root/$IP-$date.zip dr:backup/
-url=$(rclone link dr:backup/$IP-$date.zip)
+zip -r $domain-$IP-$date.zip backup > /dev/null 2>&1
+rclone copy /root/$domain-$IP-$date.zip dr:backup/
+url=$(rclone link dr:backup/$domain-$IP-$date.zip)
 id=(`echo $url | grep '^https' | cut -d'=' -f2`)
 link="https://drive.google.com/u/4/uc?id=${id}&export=download"
 echo -e "
 Detail Backup 
 ==================================
 IP VPS        : $IP
+domain        : $domain
 Link Backup   : $link
 Tanggal       : $date
 ==================================
-" | mail -s "Backup Data" $email
+#" | mail -s "Backup Data" $email
 rm -rf /root/backup
 rm -r /root/$IP-$date.zip
 clear
@@ -79,13 +84,15 @@ curl -s --max-time $TIME -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TE
 echo ""
 clear
 echo -e "
-"${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}"
-    DETAIL BACKUP
-"${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}"
-IP VPS        : $IP
-Link Backup   : $link
-Tanggal       : $date
-"${PURPLE}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}"
+"${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+             DETAIL BACKUP
+"${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+"${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+DOMAIN  : $(cat /etc/xray/domain)
+IP VPS  : $IP
+Link Backup  : $link
+Tanggal  : $date
+"${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 "
 read -p "ENTER UNTUK KEMBALI KE MENU"
 menu
