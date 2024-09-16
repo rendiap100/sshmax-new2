@@ -12,8 +12,8 @@ echo ""
 
 # Input subdomain dari user
 read -rp "Masukan Nama Domain: " -e sub
-DOMAIN=sshmax.my.id
-SUB_DOMAIN=${sub}.sshmax.my.id
+DOMAIN=sshmaxnew.my.id
+SUB_DOMAIN=${sub}.sshmaxnew.my.id
 CF_ID=rendiap100@gmail.com
 CF_KEY=2ce0b48ecb650a119639825cc486d5ac4e211
 set -euo pipefail
