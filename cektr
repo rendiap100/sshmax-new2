@@ -1,0 +1,71 @@
+#!/bin/bash
+clear
+echo -e "\033[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+echo -e " \e[1;97;101m         DAFTAR AKUN TROJAN          \e[0m"
+echo -e "\033[1;36m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+
+# Ambil daftar username
+data=$(jq -r '.[] | select(.password != null) | .email' /etc/xray/config.json | sort | uniq)
+for akun in ${data}; do
+    exp=$(jq -r --arg email "$akun" '.[] | select(.email == $email) | .expDate' /etc/xray/config.json)
+    if [[ -z "$exp" ]]; then
+        exp="Tidak Diketahui"
+    fi
+
+    byte=$(cat /etc/trojan/${akun} 2>/dev/null)
+    if [[ -z "$byte" ]]; then
+        byte="0"
+    fi
+
+    function con() {
+        local -i bytes=$1
+        if [[ $bytes -lt 1024 ]]; then
+            echo "${bytes}B"
+        elif [[ $bytes -lt 1048576 ]]; then
+            echo "$(( (bytes + 1023)/1024 ))KB"
+        elif [[ $bytes -lt 1073741824 ]]; then
+            echo "$(( (bytes + 1048575)/1048576 ))MB"
+        else
+            echo "$(( (bytes + 1073741823)/1073741824 ))GB"
+        fi
+    }
+
+    kuota=$(con ${byte})
+
+    domain=$(jq -r --arg email "$akun" '.[] | select(.email == $email) | .sni' /etc/xray/config.json)
+    path=$(jq -r --arg email "$akun" '.[] | select(.email == $email) | .path' /etc/xray/config.json)
+    key=$(jq -r --arg email "$akun" '.[] | select(.email == $email) | .password' /etc/xray/config.json)
+    service=$(jq -r --arg email "$akun" '.[] | select(.email == $email) | .serviceName' /etc/xray/config.json)
+
+    if [[ -z "$domain" ]]; then
+        domain="Tidak Diketahui"
+    fi
+    if [[ -z "$path" ]]; then
+        path="Tidak Diketahui"
+    fi
+    if [[ -z "$key" ]]; then
+        key="Tidak Diketahui"
+    fi
+    if [[ -z "$service" ]]; then
+        service="Tidak Diketahui"
+    fi
+
+    echo -e "\033[1;36m┌──────────────────────────────────────┐\033[0m"
+    printf "  %-13s %-7s %-8s %2s\n" "  USERNAME : ${akun}" | lolcat
+    printf "  %-13s %-7s %-8s %2s\n" "  EXP DATE : ${exp}" | lolcat
+    printf "  %-13s %-7s %-8s %2s\n" "  KUOTA    : ${kuota}" | lolcat
+    printf "  %-13s %-7s %-8s %2s\n" "  DOMAIN   : ${domain}" | lolcat
+    printf "  %-13s %-7s %-8s %2s\n" "  PATH     : ${path}" | lolcat
+    printf "  %-13s %-7s %-8s %2s\n" "  KEY      : ${key}" | lolcat
+    printf "  %-13s %-7s %-8s %2s\n" "  SERVICE  : ${service}" | lolcat
+    echo -e "\033[1;36m└──────────────────────────────────────┘\033[0m"
+done
+
+echo ""
+echo -e "${CYAN}╘════════════════════════════════════════╛${NC}"
+echo -e "${CYAN}╒════════════════════════════════════════╕${NC}"
+echo -e "${BIWhite}          ⇱ SCRIPT BY CLOUDVPN ⇲         ${NC}"
+echo -e "${CYAN}╘════════════════════════════════════════╛${NC}"
+echo ""
+read -n 1 -s -r -p "Press any key to back on menu"
+menu-trojan
