@@ -4,14 +4,14 @@
 dateFromServer=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 biji=$(date +"%Y-%m-%d" -d "$dateFromServer")
 
-# Membersihkan layar
 clear
 
-# Mengambil daftar klien dan menampilkannya
-clients=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3)
+# Mengambil daftar klien, mengurutkan, dan menghilangkan duplikat
+clients=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | sort -u)
 
-# Mengecek apakah ada klien yang terdaftar
+# Jumlah klien setelah diurutkan dan dihilangkan duplikat
 NUMBER_OF_CLIENTS=$(echo "$clients" | wc -l)
+
 if [[ ${NUMBER_OF_CLIENTS} == '0' ]]; then
     clear
     echo "Anda tidak memiliki klien yang ada!"
@@ -23,37 +23,49 @@ echo "TAMPILKAN INFORMASI AKUN XRAY VMESS"
 echo "Silakan pilih klien yang ingin ditampilkan informasinya"
 echo "==============================="
 
-# Menampilkan daftar klien
+# Menampilkan daftar klien dengan nomor urut
 echo "$clients" | nl -s ') '
 
 # Memilih klien
 read -rp "Pilih klien [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
 
-# Memastikan nomor yang dipilih valid
-if [[ $CLIENT_NUMBER -ge 1 && $CLIENT_NUMBER -le $NUMBER_OF_CLIENTS ]]; then
-    # Mendapatkan informasi klien sesuai dengan nomor yang dipilih
-    selected_client=$(echo "$clients" | sed -n "${CLIENT_NUMBER}p")
-    user=$(echo "$selected_client" | cut -d ' ' -f 1)
-    exp=$(echo "$selected_client" | cut -d ' ' -f 2)
-
-    # Mengambil ID berdasarkan nama pengguna
-    uuid=$(grep -E "\"email\": \"$user\"" "/etc/xray/config.json" | cut -d '"' -f 4)
-
-    # Menampilkan informasi akun
-    domain=$(cat /etc/xray/domain)
-
-    echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
-    echo -e "\\E[40;1;37m        Informasi Akun Xray/Vmess        \E[0m"
-    echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
-    echo -e "Nama Pengguna   : ${user}"
-    echo -e "Domain          : ${domain}"
-    echo -e "ID              : ${uuid}"
-    echo -e "Batas Waktu     : ${exp}"
-    echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
-else
-    echo "Nomor klien yang dipilih tidak valid!"
+# Jika input kosong, kembali ke menu trojan
+if [[ -z "$CLIENT_NUMBER" ]]; then
+    m-trojan
+    exit 0
 fi
 
-# Menunggu input sebelum kembali ke menu
+# Jika input tidak valid
+if ! [[ "$CLIENT_NUMBER" =~ ^[0-9]+$ ]] || [[ "$CLIENT_NUMBER" -lt 1 ]] || [[ "$CLIENT_NUMBER" -gt "$NUMBER_OF_CLIENTS" ]]; then
+    echo "Input tidak valid. Kembali ke menu Trojan..."
+    m-trojan
+    exit 1
+fi
+
+# Mendapatkan informasi klien yang dipilih
+selected_client=$(echo "$clients" | sed -n "${CLIENT_NUMBER}p")
+user=$(echo "$selected_client" | cut -d ' ' -f 1)
+exp=$(echo "$selected_client" | cut -d ' ' -f 2)
+
+# Mendapatkan UUID dari file config.json berdasarkan email (user)
+uuid=$(grep -E "\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 4 | head -n 1)
+
+# Mengambil domain
+domain=$(cat /etc/xray/domain)
+
+# Tampilkan informasi akun TrojanWS
+echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+echo -e "\\E[40;1;37m        Informasi Akun Xray/Vmess        \E[0m"
+echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+echo -e "Nama Pengguna   : ${user}"
+echo -e "Domain          : ${domain}"
+echo -e "ID              : ${uuid}"
+echo -e "Batas Waktu     : ${exp}"
+echo -e "TROJAN TLS      : trojan://${uuid}@${domain}:443?path=%2Ftrojan-ws&security=tls&host=${domain}&type=ws&sni=${domain}#${user}"
+echo -e "TROJAN NTLS     : trojan://${uuid}@${domain}:80?path=%2Ftrojan-ws&security=none&host=${domain}&type=ws#${user}"
+echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+echo ""
+
+# Kembali ke menu
 read -n 1 -s -r -p "Tekan tombol apa saja untuk kembali ke menu"
 menu
