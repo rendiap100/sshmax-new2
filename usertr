@@ -19,7 +19,7 @@ clear
 echo "TAMPILKAN INFORMASI AKUN XRAY VMESS"
 echo "Silakan pilih klien yang ingin ditampilkan informasinya"
 echo "==============================="
-grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | sort -u | nl -s ') '
+grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | column -t | sort | uniq
 
 # Memilih klien
 read -rp "Pilih klien [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
