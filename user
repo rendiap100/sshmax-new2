@@ -19,19 +19,18 @@ clear
 echo "TAMPILKAN INFORMASI AKUN XRAY VMESS "
 echo "Silakan pilih klien yang ingin ditampilkan informasinya"
 echo "==============================="
-grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | sort -u | nl -s ') '
-
+grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | nl -s ') '
 
 # Memilih klien
 read -rp "Pilih klien [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
 
 # Mendapatkan informasi klien
 domain=$(cat /etc/xray/domain)
-export user=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2 | sed -n "${CLIENT_NUMBER}"p)
-export exp=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 3 | sed -n "${CLIENT_NUMBER}"p)
-export uuid=$(grep -E "\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 4 | head -n 1)
+user=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2 | sed -n "${CLIENT_NUMBER}"p)
+exp=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 3 | sed -n "${CLIENT_NUMBER}"p)
+uuid=$(grep -E "^#.*\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 4)
 
-# Menampilkan informasi akun
+# Tampilkan informasi
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
 echo -e "\\E[40;1;37m        Informasi Akun Xray/Vmess        \E[0m"
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
