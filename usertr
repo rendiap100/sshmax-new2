@@ -53,17 +53,5 @@ echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━�
 
 echo ""
 
-# Memeriksa dan menghapus duplikat
-dupes=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2 | sort | uniq -d)
-
-for user_dup in $dupes; do
-    # Menghapus semua entri duplikat kecuali yang pertama
-    sed -i "0,/^#! $user_dup/! s/^#! $user_dup/#DUPLICATE/" "/etc/xray/config.json"
-done
-
-# Menghapus baris yang ditandai sebagai duplikat
-sed -i '/#DUPLICATE/d' "/etc/xray/config.json"
-
-# Kembali ke menu setelah menampilkan informasi
 read -n 1 -s -r -p "Tekan tombol apa saja untuk kembali ke menu"
 menu
