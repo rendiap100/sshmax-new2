@@ -19,7 +19,7 @@ clear
 echo "TAMPILKAN INFORMASI AKUN XRAY VMESS"
 echo "Silakan pilih klien yang ingin ditampilkan informasinya"
 echo "==============================="
-grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | column -t | sort | uniq
+grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | nl -s ') '
 
 # Memilih klien
 read -rp "Pilih klien [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
@@ -49,7 +49,6 @@ echo -e "Nama Pengguna   : ${user}"
 echo -e "Domain          : ${domain}"
 echo -e "ID              : ${uuid}"
 echo -e "Batas Waktu     : ${exp}"
-echo -e "Port TLS        : 443"
 echo -e "TROJAN TLS      : trojan://${uuid}@${domain}:443?path=%2Ftrojan-ws&security=tls&host=${domain}&type=ws&sni=${domain}#${user}"
 echo -e "TROJAN NTLS     : trojan://${uuid}@${domain}:80?path=%2Ftrojan-ws&security=none&host=${domain}&type=ws#${user}"
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
