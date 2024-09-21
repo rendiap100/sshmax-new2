@@ -21,6 +21,10 @@ echo "Silakan pilih klien yang ingin ditampilkan informasinya"
 echo "==============================="
 grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | nl -s ') '
 
+read -n 1 -s -r -p "ENTER UNTUK KEMBALI KE MENU"
+        menu
+	fi
+
 # Memilih klien
 read -rp "Pilih klien [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
 
