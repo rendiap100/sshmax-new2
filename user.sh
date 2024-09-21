@@ -32,7 +32,7 @@ export user=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2 | sed -n 
 export exp=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 3 | sed -n "${CLIENT_NUMBER}"p)
 
 # Mendapatkan UUID berdasarkan email
-export uuid=$(grep -E "\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 4)
+export uuid=$(grep -E "\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 4 | head -n 1)
 
 # Menampilkan informasi akun
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
