@@ -61,8 +61,9 @@ echo -e "Nama Pengguna   : ${user}"
 echo -e "Domain          : ${domain}"
 echo -e "ID              : ${uuid}"
 echo -e "Batas Waktu     : ${exp}"
-echo -e "VMESS TLS       : vmess://${uuid}@${domain}:443?security=tls&host=${domain}#${user}"
-echo -e "VMESS NTLS      : vmess://${uuid}@${domain}:80#${user}"
+echo -e "VMESS TLS       : vmess://${uuid}@${domain}:443?security=tls&host=${domain}#${user}" | base64
+
+echo -e "VMESS NTLS      : vmess://${uuid}@${domain}:80#${user}" | base64
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
 echo ""
 
