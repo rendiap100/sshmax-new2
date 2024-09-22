@@ -21,7 +21,7 @@ function con() {
 
 clear
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
-echo -e "        CEK USAGE QUOTA AKUN TROJAN      "
+echo -e "        CEK USAGE QUOTA AKUN VMESS       "
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 
 # Mengambil daftar akun
