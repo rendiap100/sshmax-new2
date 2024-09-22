@@ -62,6 +62,7 @@ echo -e "Domain          : ${domain}"
 echo -e "ID              : ${uuid}"
 echo -e "Batas Waktu     : ${exp}"
 
+# Format VMESS TLS
 tls_link="vmess://${uuid}@${domain}:443?security=tls&host=${domain}#${user}"
 encoded_tls_link=$(echo -n "$tls_link" | base64)
 echo -e "» VMESS TLS"
@@ -69,12 +70,14 @@ echo -e "◈━━━━━◈◈━━━━━◈"
 echo -e "$encoded_tls_link"
 echo -e "◈━━━━━◈◈━━━━━◈"
 
+# Format VMESS NON TLS
 non_tls_link="vmess://${uuid}@${domain}:80#${user}"
 encoded_non_tls_link=$(echo -n "$non_tls_link" | base64)
 echo -e "» VMESS NON TLS"
 echo -e "◈━━━━━◈◈━━━━━◈"
 echo -e "$encoded_non_tls_link"
 echo -e "◈━━━━━◈◈━━━━━◈"
+
 
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
 echo ""
