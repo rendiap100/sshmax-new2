@@ -6,7 +6,7 @@ biji=$(date +"%Y-%m-%d" -d "$dateFromServer")
 
 clear
 
-# Mengambil daftar klien Vmess, mengurutkan, dan menghilangkan duplikat
+# Mengambil daftar klien, mengurutkan, dan menghilangkan duplikat
 clients=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | sort -u)
 
 # Jumlah klien setelah diurutkan dan dihilangkan duplikat
@@ -29,7 +29,7 @@ echo "$clients" | nl -s ') '
 # Memilih klien
 read -rp "Pilih klien [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
 
-# Jika input kosong, kembali ke menu Vmess
+# Jika input kosong, kembali ke menu vmess
 if [[ -z "$CLIENT_NUMBER" ]]; then
     m-vmess
     exit 0
@@ -61,8 +61,8 @@ echo -e "Nama Pengguna   : ${user}"
 echo -e "Domain          : ${domain}"
 echo -e "ID              : ${uuid}"
 echo -e "Batas Waktu     : ${exp}"
-echo -e "VMESS TLS       : vmess://"${uuid}@${domain}:443?security=tls&host=${domain}#${user}" | base64
-echo -e "VMESS NTLS      : vmess://"${uuid}@${domain}:80#${user}" |base64
+echo -e "VMESS TLS       : vmess://${uuid}@${domain}:443?path=%2Fvmess&security=tls&host=${domain}&type=ws#${user}"
+echo -e "VMESS NTLS      : vmess://${uuid}@${domain}:80?path=%2Fvmess&security=none&host=${domain}&type=ws#${user}"
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
 echo ""
 
