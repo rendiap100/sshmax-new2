@@ -1,86 +1,58 @@
 #!/bin/bash
 
-# Mendapatkan tanggal dari server
-dateFromServer=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
-biji=$(date +"%Y-%m-%d" -d "$dateFromServer")
+RED="\033[31m"
+YELLOW="\033[33m"
+NC='\e[0m'
+Lgreen='\033[92m'
+PURPLE='\033[35m'
+
+function con() {
+    local -i bytes=$1
+    if [[ $bytes -lt 1024 ]]; then
+        echo "${bytes}B"
+    elif [[ $bytes -lt 1048576 ]]; then
+        echo "$(( (bytes + 1023)/1024 ))KB"
+    elif [[ $bytes -lt 1073741824 ]]; then
+        echo "$(( (bytes + 1048575)/1048576 ))MB"
+    else
+        echo "$(( (bytes + 1073741823)/1073741824 ))GB"
+    fi
+}
 
 clear
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo -e "        CEK USAGE QUOTA AKUN TROJAN      "
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 
-# Mengambil daftar klien
-clients=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | sort -u)
+# Mengambil daftar akun
+data=( `grep '^#!' /etc/xray/config.json | cut -d ' ' -f 2 | sort | uniq` )
 
-# Jumlah klien
-NUMBER_OF_CLIENTS=$(echo "$clients" | wc -l)
-
-if [[ ${NUMBER_OF_CLIENTS} == '0' ]]; then
-    clear
-    echo "Anda tidak memiliki klien yang ada!"
-    exit 1
-fi
-
-clear
-echo "TAMPILKAN INFORMASI AKUN XRAY VMESS"
-echo "Silakan pilih klien yang ingin ditampilkan informasinya"
-echo "==============================="
-
-# Menampilkan daftar klien
-echo "$clients" | nl -s ') '
-
-# Memilih klien
-read -rp "Pilih klien [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
-
-# Jika input kosong
-if [[ -z "$CLIENT_NUMBER" ]]; then
-    m-trojan
-    exit 0
-fi
-
-# Jika input tidak valid
-if ! [[ "$CLIENT_NUMBER" =~ ^[0-9]+$ ]] || [[ "$CLIENT_NUMBER" -lt 1 ]] || [[ "$CLIENT_NUMBER" -gt "$NUMBER_OF_CLIENTS" ]]; then
-    echo "Input tidak valid. Kembali ke menu Trojan..."
-    m-trojan
-    exit 1
-fi
-
-# Mendapatkan informasi klien yang dipilih
-selected_client=$(echo "$clients" | sed -n "${CLIENT_NUMBER}p")
-user=$(echo "$selected_client" | cut -d ' ' -f 1)
-exp=$(echo "$selected_client" | cut -d ' ' -f 2)
-
-uuid=$(grep -E "\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 4 | head -n 1)
-
-domain=$(cat /etc/xray/domain)
-
-# Mendapatkan log bandwidth untuk pengguna
-log_file="/var/log/xray/access.log" # Sesuaikan path ini jika berbeda
-if [[ -f "$log_file" ]]; then
-    # Menghitung total bandwidth dalam byte
-    bandwidth=$(grep "$uuid" "$log_file" | awk '{sum += $10} END {print sum}')
-    
-    if [[ -z "$bandwidth" ]]; then
-        bandwidth=0
+for akun in "${data[@]}"; do
+    if [[ -z "$akun" ]]; then
+        akun="tidakada"
     fi
     
-    # Konversi byte ke MB
-    bandwidth_mb=$(echo "$bandwidth / 1024 / 1024" | bc -l)
-else
-    echo "Log file tidak ditemukan!"
-    bandwidth_mb="0"
-fi
+    byte=$(cat /etc/trojan/${akun}) 2>/dev/null
+    if [[ -z "$byte" ]]; then
+        byte=0
+    fi
+    
+    usage_quota=$(con $byte)
+    
+    # Mendapatkan limit kuota dari file yang sesuai
+    lim=$(cat /etc/limit/trojan/${akun}) 2>/dev/null
+    if [[ -z "$lim" ]]; then
+        lim=0
+    fi
+    limit_quota=$(con $lim)
 
-# Tampilkan informasi akun Trojan dan penggunaan bandwidth
-echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
-echo -e "\\E[40;1;37m        Informasi Akun Xray/Trojan        \E[0m"
-echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
-echo -e "Nama Pengguna   : ${user}"
-echo -e "Domain          : ${domain}"
-echo -e "ID              : ${uuid}"
-echo -e "Batas Waktu     : ${exp}"
-echo -e "Total Bandwidth : ${bandwidth_mb} MB"
-echo -e "TROJAN TLS      : trojan://${uuid}@${domain}:443?path=%2Ftrojan-ws&security=tls&host=${domain}&type=ws&sni=${domain}#${user}"
-echo -e "TROJAN NTLS     : trojan://${uuid}@${domain}:80?path=%2Ftrojan-ws&security=none&host=${domain}&type=ws#${user}"
-echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+    echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+    printf "    %-13s %-7s\n" "UserName : ${akun}"
+    printf "    %-13s %-7s\n" "Usage Quota : ${usage_quota}" 
+    printf "    %-13s %-7s\n" "Limit Quota : ${limit_quota}" 
+    echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+done
+
 echo ""
-
-read -n 1 -s -r -p "Tekan tombol apa saja untuk kembali ke menu"
+read -p "ENTER UNTUK KEMBALI KE MENU"
 menu
