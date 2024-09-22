@@ -40,7 +40,7 @@ for akun in "${data[@]}"; do
     usage_quota=$(con $byte)
     
     # Mendapatkan limit kuota dari file yang sesuai
-    lim=$(cat /etc/limit/vmess/${akun}) 2>/dev/null
+    lim=$(cat /etc/kyt/limit/vmess/${akun}) 2>/dev/null
     if [[ -z "$lim" ]]; then
         lim=0
     fi
