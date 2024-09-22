@@ -25,14 +25,14 @@ echo -e "        CEK USAGE QUOTA AKUN TROJAN      "
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 
 # Mengambil daftar akun
-data=( `grep '###' /etc/xray/config.json | cut -d ' ' -f 2 | sort | uniq` )
+data=( `grep '^#!' /etc/xray/config.json | cut -d ' ' -f 2 | sort | uniq` )
 
 for akun in "${data[@]}"; do
     if [[ -z "$akun" ]]; then
         akun="tidakada"
     fi
     
-    byte=$(cat /etc/trojan/${akun}) 2>/dev/null
+    byte=$(cat /etc/vmess/${akun}) 2>/dev/null
     if [[ -z "$byte" ]]; then
         byte=0
     fi
@@ -40,7 +40,7 @@ for akun in "${data[@]}"; do
     usage_quota=$(con $byte)
     
     # Mendapatkan limit kuota dari file yang sesuai
-    lim=$(cat /etc/limit/trojan/${akun}) 2>/dev/null
+    lim=$(cat /etc/limit/vmess/${akun}) 2>/dev/null
     if [[ -z "$lim" ]]; then
         lim=0
     fi
