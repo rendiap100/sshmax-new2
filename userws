@@ -53,6 +53,10 @@ uuid=$(grep -E "\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 
 # Mengambil domain
 domain=$(cat /etc/xray/domain)
 
+# Base64 encode bagian "${uuid}@${domain}:443" dan "${uuid}@${domain}:80"
+encoded_tls=$(echo -n "${uuid}@${domain}:443" | base64)
+encoded_ntls=$(echo -n "${uuid}@${domain}:80" | base64)
+
 # Tampilkan informasi akun Vmess
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
 echo -e "\\E[40;1;37m        Informasi Akun Xray/Vmess        \E[0m"
@@ -61,8 +65,8 @@ echo -e "Nama Pengguna   : ${user}"
 echo -e "Domain          : ${domain}"
 echo -e "ID              : ${uuid}"
 echo -e "Batas Waktu     : ${exp}"
-echo -e "VMESS TLS       : vmess://${uuid}@${domain}:443?path=%2Fvmess&security=tls&host=${domain}&type=ws#${user}"
-echo -e "VMESS NTLS      : vmess://${uuid}@${domain}:80?path=%2Fvmess&security=none&host=${domain}&type=ws#${user}"
+echo -e "VMESS TLS       : vmess://${encoded_tls}?path=%2Fvmess&security=tls&host=${domain}&type=ws#${user}"
+echo -e "VMESS NTLS      : vmess://${encoded_ntls}?path=%2Fvmess&security=none&host=${domain}&type=ws#${user}"
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
 echo ""
 
