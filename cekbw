@@ -1,45 +1,86 @@
 #!/bin/bash
 
-# Konfigurasi
-API_URL="http://127.0.0.1:10000"
-USERS_FILE="/etc/xray/config.json"  # Sesuaikan path dengan lokasi file config kamu
+# Mendapatkan tanggal dari server
+dateFromServer=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
+biji=$(date +"%Y-%m-%d" -d "$dateFromServer")
 
-# Fungsi untuk mengambil daftar user dari file config
-get_users() {
-    # Mengambil user dari bagian "clients" dalam konfigurasi json
-    jq -r '.inbounds[]?.settings.clients[]?.email' "$USERS_FILE"
-}
+clear
 
-# Fungsi untuk mengecek bandwidth uplink dan downlink
-cek_bandwidth_user() {
-    local user="$1"
+# Mengambil daftar klien
+clients=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | sort -u)
 
-    # Cek uplink
-    uplink=$(curl -s -X POST $API_URL/stats/query -d "{\"name\": \"user>>>$user>>>traffic>>>uplink\"}" | jq -r '.value')
+# Jumlah klien
+NUMBER_OF_CLIENTS=$(echo "$clients" | wc -l)
 
-    # Cek downlink
-    downlink=$(curl -s -X POST $API_URL/stats/query -d "{\"name\": \"user>>>$user>>>traffic>>>downlink\"}" | jq -r '.value')
+if [[ ${NUMBER_OF_CLIENTS} == '0' ]]; then
+    clear
+    echo "Anda tidak memiliki klien yang ada!"
+    exit 1
+fi
 
-    # Tampilkan hasil
-    echo "User: $user"
-    echo "  Uplink  : $uplink bytes"
-    echo "  Downlink: $downlink bytes"
-    echo ""
-}
+clear
+echo "TAMPILKAN INFORMASI AKUN XRAY VMESS"
+echo "Silakan pilih klien yang ingin ditampilkan informasinya"
+echo "==============================="
 
-# Fungsi utama untuk menjalankan pengecekan bandwidth untuk semua user
-cek_semua_bandwidth() {
-    users=$(get_users)
+# Menampilkan daftar klien
+echo "$clients" | nl -s ') '
 
-    if [[ -z "$users" ]]; then
-        echo "Tidak ada user yang ditemukan dalam konfigurasi."
-        exit 1
+# Memilih klien
+read -rp "Pilih klien [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
+
+# Jika input kosong
+if [[ -z "$CLIENT_NUMBER" ]]; then
+    m-trojan
+    exit 0
+fi
+
+# Jika input tidak valid
+if ! [[ "$CLIENT_NUMBER" =~ ^[0-9]+$ ]] || [[ "$CLIENT_NUMBER" -lt 1 ]] || [[ "$CLIENT_NUMBER" -gt "$NUMBER_OF_CLIENTS" ]]; then
+    echo "Input tidak valid. Kembali ke menu Trojan..."
+    m-trojan
+    exit 1
+fi
+
+# Mendapatkan informasi klien yang dipilih
+selected_client=$(echo "$clients" | sed -n "${CLIENT_NUMBER}p")
+user=$(echo "$selected_client" | cut -d ' ' -f 1)
+exp=$(echo "$selected_client" | cut -d ' ' -f 2)
+
+uuid=$(grep -E "\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 4 | head -n 1)
+
+domain=$(cat /etc/xray/domain)
+
+# Mendapatkan log bandwidth untuk pengguna
+log_file="/var/log/xray/access.log" # Sesuaikan path ini jika berbeda
+if [[ -f "$log_file" ]]; then
+    # Menghitung total bandwidth dalam byte
+    bandwidth=$(grep "$uuid" "$log_file" | awk '{sum += $10} END {print sum}')
+    
+    if [[ -z "$bandwidth" ]]; then
+        bandwidth=0
     fi
+    
+    # Konversi byte ke MB
+    bandwidth_mb=$(echo "$bandwidth / 1024 / 1024" | bc -l)
+else
+    echo "Log file tidak ditemukan!"
+    bandwidth_mb="0"
+fi
 
-    for user in $users; do
-        cek_bandwidth_user "$user"
-    done
-}
+# Tampilkan informasi akun Trojan dan penggunaan bandwidth
+echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+echo -e "\\E[40;1;37m        Informasi Akun Xray/Trojan        \E[0m"
+echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+echo -e "Nama Pengguna   : ${user}"
+echo -e "Domain          : ${domain}"
+echo -e "ID              : ${uuid}"
+echo -e "Batas Waktu     : ${exp}"
+echo -e "Total Bandwidth : ${bandwidth_mb} MB"
+echo -e "TROJAN TLS      : trojan://${uuid}@${domain}:443?path=%2Ftrojan-ws&security=tls&host=${domain}&type=ws&sni=${domain}#${user}"
+echo -e "TROJAN NTLS     : trojan://${uuid}@${domain}:80?path=%2Ftrojan-ws&security=none&host=${domain}&type=ws#${user}"
+echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
+echo ""
 
-# Jalankan fungsi
-cek_semua_bandwidth
+read -n 1 -s -r -p "Tekan tombol apa saja untuk kembali ke menu"
+menu
