@@ -7,7 +7,7 @@ biji=$(date +"%Y-%m-%d" -d "$dateFromServer")
 clear
 
 # Mengambil daftar klien Vmess, mengurutkan, dan menghilangkan duplikat
-clients=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | sort -u)
+clients=$(grep -E "^### " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | sort -u)
 
 # Jumlah klien setelah diurutkan dan dihilangkan duplikat
 NUMBER_OF_CLIENTS=$(echo "$clients" | wc -l)
@@ -61,17 +61,23 @@ echo -e "Nama Pengguna   : ${user}"
 echo -e "Domain          : ${domain}"
 echo -e "ID              : ${uuid}"
 echo -e "Batas Waktu     : ${exp}"
-echo -e "» VMESS TLS" 
-echo -e "◈━━━━━◈◈━━━━━◈" 
-echo -e "vmess://"${uuid}@${domain}:443?security=tls&host=${domain}#${user}" | base64 
+
+tls_link="vmess://${uuid}@${domain}:443?security=tls&host=${domain}#${user}"
+encoded_tls_link=$(echo -n "$tls_link" | base64)
+echo -e "» VMESS TLS"
 echo -e "◈━━━━━◈◈━━━━━◈"
-echo -e "» VMESS NON TLS" 
-echo -e "◈━━━━━◈◈━━━━━◈" 
-echo -e "vmess://"${uuid}@${domain}:80#${user}" | base64 
+echo -e "$encoded_tls_link"
 echo -e "◈━━━━━◈◈━━━━━◈"
+
+non_tls_link="vmess://${uuid}@${domain}:80#${user}"
+encoded_non_tls_link=$(echo -n "$non_tls_link" | base64)
+echo -e "» VMESS NON TLS"
+echo -e "◈━━━━━◈◈━━━━━◈"
+echo -e "$encoded_non_tls_link"
+echo -e "◈━━━━━◈◈━━━━━◈"
+
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
 echo ""
 
-# Kembali ke menu
 read -n 1 -s -r -p "Tekan tombol apa saja untuk kembali ke menu"
 menu
