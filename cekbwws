@@ -21,11 +21,11 @@ function con() {
 
 clear
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
-echo -e "        CEK USAGE QUOTA AKUN VMESS       "
+echo -e "        CEK USAGE QUOTA AKUN TROJAN      "
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 
 # Mengambil daftar akun
-data=( `grep '^#!' /etc/xray/config.json | cut -d ' ' -f 2 | sort | uniq` )
+data=( `grep '^###' /etc/xray/config.json | cut -d ' ' -f 2 | sort | uniq` )
 
 for akun in "${data[@]}"; do
     if [[ -z "$akun" ]]; then
@@ -39,14 +39,14 @@ for akun in "${data[@]}"; do
     
     usage_quota=$(con $byte)
     
-    # Mendapatkan limit kuota dari file yang sesuai
+    # Mendapatkan limit kuota
     lim=$(cat /etc/limit/vmess/${akun}) 2>/dev/null
     if [[ -z "$lim" ]]; then
         lim=0
     fi
     limit_quota=$(con $lim)
 
-    # Mendapatkan waktu login terakhir
+    # Mendapatkan waktu login
     last_login=$(grep -w "$akun" /var/log/xray/access.log | tail -n 1 | awk '{print $2}') 2>/dev/null
     if [[ -z "$last_login" ]]; then
         last_login="Tidak ada"
