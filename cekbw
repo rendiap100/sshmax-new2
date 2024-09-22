@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Konfigurasi
+API_URL="http://127.0.0.1:10000"
+USERS_FILE="/etc/xray/config.json"  # Sesuaikan path dengan lokasi file config kamu
+
+# Fungsi untuk mengambil daftar user dari file config
+get_users() {
+    # Mengambil user dari bagian "clients" dalam konfigurasi json
+    jq -r '.inbounds[]?.settings.clients[]?.email' "$USERS_FILE"
+}
+
+# Fungsi untuk mengecek bandwidth uplink dan downlink
+cek_bandwidth_user() {
+    local user="$1"
+
+    # Cek uplink
+    uplink=$(curl -s -X POST $API_URL/stats/query -d "{\"name\": \"user>>>$user>>>traffic>>>uplink\"}" | jq -r '.value')
+
+    # Cek downlink
+    downlink=$(curl -s -X POST $API_URL/stats/query -d "{\"name\": \"user>>>$user>>>traffic>>>downlink\"}" | jq -r '.value')
+
+    # Tampilkan hasil
+    echo "User: $user"
+    echo "  Uplink  : $uplink bytes"
+    echo "  Downlink: $downlink bytes"
+    echo ""
+}
+
+# Fungsi utama untuk menjalankan pengecekan bandwidth untuk semua user
+cek_semua_bandwidth() {
+    users=$(get_users)
+
+    if [[ -z "$users" ]]; then
+        echo "Tidak ada user yang ditemukan dalam konfigurasi."
+        exit 1
+    fi
+
+    for user in $users; do
+        cek_bandwidth_user "$user"
+    done
+}
+
+# Jalankan fungsi
+cek_semua_bandwidth
