@@ -46,9 +46,20 @@ for akun in "${data[@]}"; do
     fi
     limit_quota=$(con $lim)
 
+    # Mendapatkan waktu login terakhir
+    last_login=$(grep -w "$akun" /var/log/xray/access.log | tail -n 1 | awk '{print $2}') 2>/dev/null
+    if [[ -z "$last_login" ]]; then
+        last_login="Tidak ada"
+    fi
+    
+    # Mendapatkan jumlah IP yang login
+    ip_count=$(grep -w "$akun" /var/log/xray/access.log | awk '{print $3}' | sed 's/tcp://g' | cut -d ':' -f 1 | sort | uniq | wc -l)
+
     echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
     printf "    %-13s %-7s\n" "UserName : ${akun}"
     printf "    %-13s %-7s\n" "Total Bandwidth : ${limit_quota}" 
+    printf "    %-13s %-7s\n" "Last Login : ${last_login}"
+    printf "    %-13s %-7s\n" "Login IP : ${ip_count}"
     echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 done
 
