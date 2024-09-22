@@ -1,0 +1,68 @@
+#!/bin/bash
+
+RED="\033[31m"
+YELLOW="\033[33m"
+NC='\e[0m'
+Lgreen='\033[92m'
+PURPLE='\033[35m'
+
+function con() {
+    local -i bytes=$1
+    if [[ $bytes -lt 1024 ]]; then
+        echo "${bytes}B"
+    elif [[ $bytes -lt 1048576 ]]; then
+        echo "$(( (bytes + 1023)/1024 ))KB"
+    elif [[ $bytes -lt 1073741824 ]]; then
+        echo "$(( (bytes + 1048575)/1048576 ))MB"
+    else
+        echo "$(( (bytes + 1073741823)/1073741824 ))GB"
+    fi
+}
+
+clear
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo -e "        CEK USAGE QUOTA AKUN TROJAN      "
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+
+# Mengambil daftar akun
+data=( `grep '^###' /etc/xray/config.json | cut -d ' ' -f 2 | sort | uniq` )
+
+for akun in "${data[@]}"; do
+    if [[ -z "$akun" ]]; then
+        akun="tidakada"
+    fi
+    
+    byte=$(cat /etc/trojan/${akun}) 2>/dev/null
+    if [[ -z "$byte" ]]; then
+        byte=0
+    fi
+    
+    usage_quota=$(con $byte)
+    
+    # Mendapatkan limit kuota
+    lim=$(cat /etc/limit/trojan/${akun}) 2>/dev/null
+    if [[ -z "$lim" ]]; then
+        lim=0
+    fi
+    limit_quota=$(con $lim)
+
+    # Mendapatkan waktu login
+    last_login=$(grep -w "$akun" /var/log/xray/access.log | tail -n 1 | awk '{print $2}') 2>/dev/null
+    if [[ -z "$last_login" ]]; then
+        last_login="Tidak ada"
+    fi
+    
+    # Mendapatkan jumlah IP yang login
+    ip_count=$(grep -w "$akun" /var/log/xray/access.log | awk '{print $3}' | sed 's/tcp://g' | cut -d ':' -f 1 | sort | uniq | wc -l)
+
+    echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+    printf "    %-13s %-7s\n" "UserName : ${akun}"
+    printf "    %-13s %-7s\n" "Total Bandwidth : ${limit_quota}" 
+    printf "    %-13s %-7s\n" "Last Login : ${last_login}"
+    printf "    %-13s %-7s\n" "Login IP : ${ip_count}"
+    echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+done
+
+echo ""
+read -p "ENTER UNTUK KEMBALI KE MENU"
+menu
