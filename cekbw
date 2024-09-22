@@ -48,8 +48,7 @@ for akun in "${data[@]}"; do
 
     echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
     printf "    %-13s %-7s\n" "UserName : ${akun}"
-    printf "    %-13s %-7s\n" "Usage Quota : ${usage_quota}" 
-    printf "    %-13s %-7s\n" "Limit Quota : ${limit_quota}" 
+    printf "    %-13s %-7s\n" "Total Bandwidth : ${limit_quota}" 
     echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 done
 
