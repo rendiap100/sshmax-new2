@@ -75,7 +75,7 @@ non_tls_link="vmess://${uuid}@${domain}:80#${user}"
 echo -e "» VMESS NON TLS"
 echo -e "◈━━━━━◈◈━━━━━◈"
 echo -e "$non_tls_link" # Tautan asli tanpa base64
-echo -e "Base64: $(echo -n "${uuid}@${domain}:80#${user}" | base64)" # Tautan NON TLS bagian yang di-encode
+echo -e "Base64: $(echo -n vmess://"${uuid}@${domain}:80#${user}" | base64)" # Tautan NON TLS bagian yang di-encode
 echo -e "◈━━━━━◈◈━━━━━◈"
 
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
