@@ -61,23 +61,8 @@ echo -e "Nama Pengguna   : ${user}"
 echo -e "Domain          : ${domain}"
 echo -e "ID              : ${uuid}"
 echo -e "Batas Waktu     : ${exp}"
-
-# Format VMESS TLS
-tls_link="vmess://${uuid}@${domain}:443?security=tls&host=${domain}#${user}"
-echo -e "» VMESS TLS"
-echo -e "◈━━━━━◈◈━━━━━◈"
-echo -e "$tls_link" # Tautan asli tanpa base64
-echo -e "Base64: $(echo -n "${uuid}@${domain}:443#${user}" | base64)" # Tautan TLS bagian yang di-encode
-echo -e "◈━━━━━◈◈━━━━━◈"
-
-# Format VMESS NON TLS
-non_tls_link="vmess://${uuid}@${domain}:80#${user}"
-echo -e "» VMESS NON TLS"
-echo -e "◈━━━━━◈◈━━━━━◈"
-echo -e "$non_tls_link" # Tautan asli tanpa base64
-echo -e "Base64: $(echo -n vmess://"${uuid}@${domain}:80#${user}" | base64)" # Tautan NON TLS bagian yang di-encode
-echo -e "◈━━━━━◈◈━━━━━◈"
-
+echo -e "VMESS TLS       : vmess://"${uuid}@${domain}:443?security=tls&host=${domain}#${user}" | base64
+echo -e "VMESS NTLS      : vmess://"${uuid}@${domain}:80#${user}" |base64
 echo -e "\e[33m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\033[0m"
 echo ""
 
