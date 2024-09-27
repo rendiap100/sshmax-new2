@@ -13,7 +13,7 @@ echo -e "         DAFTAR AKUN VMESS          "
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 
 # Ambil daftar klien
-clients=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | sort -u)
+clients=$(grep -E "^### " "/etc/xray/config.json" | cut -d ' ' -f 2-3 | sort -u)
 NUMBER_OF_CLIENTS=$(echo "$clients" | wc -l)
 
 if [[ ${NUMBER_OF_CLIENTS} == '0' ]]; then
