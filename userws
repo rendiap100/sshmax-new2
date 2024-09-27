@@ -145,4 +145,3 @@ echo -e "» Tanggal Exp  : ${exp}"
 echo -e "${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}"
 echo -e ""
 read -n 1 -s -r -p "Enter Enter Untuk Kembali Ke menu"
-menu
