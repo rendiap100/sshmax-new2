@@ -29,13 +29,11 @@ echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈�
 read -rp "Pilih Klien [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
 
 if [[ -z "$CLIENT_NUMBER" ]]; then
-    m-vmess
     exit 0
 fi
 
 if ! [[ "$CLIENT_NUMBER" =~ ^[0-9]+$ ]] || [[ "$CLIENT_NUMBER" -lt 1 ]] || [[ "$CLIENT_NUMBER" -gt "$NUMBER_OF_CLIENTS" ]]; then
     echo "Input tidak valid. Kembali ke menu Vmess..."
-    m-vmess
     exit 1
 fi
 
@@ -147,3 +145,4 @@ echo -e "» Tanggal Exp  : ${exp}"
 echo -e "${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}"
 echo -e ""
 read -n 1 -s -r -p "Enter Enter Untuk Kembali Ke menu"
+menu
