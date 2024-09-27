@@ -1,4 +1,5 @@
 #!/bin/bash
+
 dateFromServer=$(curl -v --insecure --silent https://google.com/ 2>&1 | grep Date | sed -e 's/< Date: //')
 biji=$(date +"%Y-%m-%d" -d "$dateFromServer")
 NC="\e[0m"
@@ -24,7 +25,7 @@ echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈�
 echo -e "         DAFTAR AKUN VMESS          "
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
-echo -e "$clients"|    nl -s ') '
+echo -e "$clients" | nl -s ') '
 echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 read -rp "Pilih Klien [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
 
@@ -40,92 +41,90 @@ if ! [[ "$CLIENT_NUMBER" =~ ^[0-9]+$ ]] || [[ "$CLIENT_NUMBER" -lt 1 ]] || [[ "$
 fi
 
 selected_client=$(echo "$clients" | sed -n "${CLIENT_NUMBER}p")
-export user=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 2 | sed -n "${CLIENT_NUMBER}"p)
-export harini=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 4 | sed -n "${CLIENT_NUMBER}"p)
-export exp=$(grep -E "^#! " "/etc/xray/config.json" | cut -d ' ' -f 3 | sed -n "${CLIENT_NUMBER}"p)
-uuid=$(grep -E "\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 4 | head -n 1)
 user=$(echo "$selected_client" | cut -d ' ' -f 1)
 exp=$(echo "$selected_client" | cut -d ' ' -f 2)
+
+# Mendapatkan UUID dari file config.json berdasarkan email (user)
+uuid=$(grep -E "\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 4 | head -n 1)
 domain=$(cat /etc/xray/domain)
-none="$(cat ~/log-install.txt | grep -w "Vmess WS none TLS" | cut -d: -f2|sed 's/ //g')"
-acs=`cat<<EOF
-      {
-      "v": "2",
-      "ps": "${user}",
-      "add": "${domain}",
-      "port": "443",
-      "id": "${uuid}",
-      "aid": "0",
-      "net": "ws",
-      "path": "/vmess",
-      "type": "none",
-      "host": "${domain}",
-      "tls": "tls"
+
+# JSON config untuk VMESS
+acs=$(cat <<EOF
+{
+  "v": "2",
+  "ps": "${user}",
+  "add": "${domain}",
+  "port": "443",
+  "id": "${uuid}",
+  "aid": "0",
+  "net": "ws",
+  "path": "/vmess",
+  "type": "none",
+  "host": "${domain}",
+  "tls": "tls"
 }
-EOF`
-ask=`cat<<EOF
-      {
-      "v": "2",
-      "ps": "${user}",
-      "add": "${domain}",
-      "port": "80",
-      "id": "${uuid}",
-      "aid": "0",
-      "net": "ws",
-      "path": "/vmess",
-      "type": "none",
-      "host": "${domain}",
-      "tls": "none"
+EOF
+)
+
+ask=$(cat <<EOF
+{
+  "v": "2",
+  "ps": "${user}",
+  "add": "${domain}",
+  "port": "80",
+  "id": "${uuid}",
+  "aid": "0",
+  "net": "ws",
+  "path": "/vmess",
+  "type": "none",
+  "host": "${domain}",
+  "tls": "none"
 }
-EOF`
-grpc=`cat<<EOF
-      {
-      "v": "2",
-      "ps": "${user}",
-      "add": "${domain}",
-      "port": "443",
-      "id": "${uuid}",
-      "aid": "0",
-      "net": "grpc",
-      "path": "vmess-grpc",
-      "type": "none",
-      "host": "${domain}",
-      "tls": "tls"
+EOF
+)
+
+grpc=$(cat <<EOF
+{
+  "v": "2",
+  "ps": "${user}",
+  "add": "${domain}",
+  "port": "443",
+  "id": "${uuid}",
+  "aid": "0",
+  "net": "grpc",
+  "path": "vmess-grpc",
+  "type": "none",
+  "host": "${domain}",
+  "tls": "tls"
 }
-EOF`
-vmess_base641=$( base64 -w 0 <<< $vmess_json1)
-vmess_base642=$( base64 -w 0 <<< $vmess_json2)
-vmess_base643=$( base64 -w 0 <<< $vmess_json3)
-vmesslink1="vmess://$(echo $acs | base64 -w 0)"
-vmesslink2="vmess://$(echo $ask | base64 -w 0)"
-vmesslink3="vmess://$(echo $grpc | base64 -w 0)"
- "${uuid}@${domain}:443" dan "${uuid}@${domain}:80"
-encoded_tls=$(echo -n "${uuid}@${domain}:443" | base64)
-encoded_ntls=$(echo -n "${uuid}@${domain}:80" | base64)
-encoded_grpc=$(echo -n "${uuid}@${domain}:443" | base64)
+EOF
+)
+
+# Encode JSON dan tautan VMESS ke base64
+vmesslink1="vmess://$(echo "$acs" | base64 -w 0)"
+vmesslink2="vmess://$(echo "$ask" | base64 -w 0)"
+vmesslink3="vmess://$(echo "$grpc" | base64 -w 0)"
+
+# Restart layanan
 systemctl restart xray > /dev/null 2>&1
 service cron restart > /dev/null 2>&1
-clear
+
+# Tampilkan informasi akun VMESS
 clear
 echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}"
 echo -e "» INFORMASI AKUN « "
 echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}"
-echo -e "» Domain  : ${domain}"
-echo -e "» Pengguna  : ${user}" 
-echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}"
-echo -e "» Port TLS  : 443"
-echo -e "» Port NTLS  : 80, 8080, 8880, 2082"
-echo -e "» id  : ${uuid}"
-#echo -e "» Xray Dns  : ${NS}"
-#echo -e "» Pubkey  : ${PUB}"
-echo -e "» alterId  : 0"
-echo -e "» Security  : auto"
-echo -e "» Network  : ws"
-echo -e "» Path  : /vmess/multi-path"
-#echo -e "» Patch Wildcard  : betaa.zoom.us.${domain}" | tee -a /etc/user-create/user.log
+echo -e "» Domain      : ${domain}"
+echo -e "» Pengguna    : ${user}" 
+echo -e "» Port TLS    : 443"
+echo -e "» Port NTLS   : 80, 8080, 8880, 2082"
+echo -e "» ID         : ${uuid}"
+echo -e "» AlterID    : 0"
+echo -e "» Security    : auto"
+echo -e "» Network     : ws"
+echo -e "» Path        : /vmess/multi-path"
 echo -e "» ServiceName  : vmess-grpc"
-#echo -e "» Host XrayDNS : ${NS}" | tee -a /etc/user-create/user.log
-#echo -e "» Pub Key  : ${PUB}" | tee -a /etc/user-create/user.log
+echo -e "» Tanggal Exp  : ${exp}"
 echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}"
 echo -e "» VMESS TLS"
 echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}"
@@ -139,12 +138,6 @@ echo -e "» VMESS GRPC"
 echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}"
 echo -e "${vmesslink3}"
 echo -e "${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}"
-#echo -e "» Batas Ip  : ${iplim Device}"
-#echo -e "» Batas Kuota  : ${Quota GB} GB"
-#echo -e "» Aktif Selama  : ${masaaktif Hari}"
-#echo -e "» Tanggal Dibuat  : ${tnggl}"
-echo -e "» Tanggal Exp  : ${exp}"
-echo -e "${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}"
-echo -e ""
-read -n 1 -s -r -p "Enter Enter Untuk Kembali Ke menu"
+
+read -n 1 -s -r -p "Tekan Enter untuk kembali ke menu"
 m-vmess
