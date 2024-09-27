@@ -34,6 +34,7 @@ fi
 selected_client=$(echo "$clients" | sed -n "${CLIENT_NUMBER}p")
 user=$(echo "$selected_client" | cut -d ' ' -f 1)
 uuid=$(grep -E "\"email\": \"${user}\"" "/etc/xray/config.json" | cut -d '"' -f 4 | head -n 1)
+exp=$(grep -E "^### ${user} " "/etc/xray/config.json" | cut -d ' ' -f 3) # Mengambil tanggal kedaluwarsa
 domain=$(cat /etc/xray/domain)
 
 # JSON untuk VMESS
@@ -83,7 +84,7 @@ echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}"
 echo -e "» Domain      : ${domain}"
 echo -e "» Pengguna    : ${user}" 
 echo -e "» ID          : ${uuid}"
-echo -e "» Tanggal Exp : ${exp}"
+echo -e "» Tanggal Exp : ${exp}"  # Tampilkan tanggal kedaluwarsa
 echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}"
 echo -e "» VMESS TLS"
 echo -e "${vmesslink1}"
