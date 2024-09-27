@@ -140,4 +140,4 @@ echo -e "${vmesslink3}"
 echo -e "${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}"
 
 read -n 1 -s -r -p "Tekan Enter untuk kembali ke menu"
-m-vmess
+menu
