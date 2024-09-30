@@ -2,7 +2,7 @@
 
 clear
 echo "TAMPILKAN INFORMASI AKUN SSH"
-echo "Silakan pilih akun yang ingin ditampilkan informasinya"
+echo "Silakan pilih akun yang ingin ditampilkan atau dihapus"
 echo "==============================="
 
 # Direktori tempat menyimpan akun SSH
@@ -50,3 +50,17 @@ echo "Informasi Akun SSH dari file: $SELECTED_CLIENT"
 echo "Isi file:"
 cat "$DIRECTORY$SELECTED_CLIENT"
 echo "------------------------------"
+
+# Tanya apakah ingin menghapus file
+read -rp "Apakah Anda ingin menghapus akun ini? [y/N]: " DELETE_CONFIRMATION
+
+if [[ "$DELETE_CONFIRMATION" =~ ^[Yy]$ ]]; then
+  rm -f "$DIRECTORY$SELECTED_CLIENT"
+  if [ $? -eq 0 ]; then
+    echo "Akun SSH $SELECTED_CLIENT berhasil dihapus."
+  else
+    echo "Gagal menghapus akun SSH $SELECTED_CLIENT."
+  fi
+else
+  echo "Akun SSH tidak dihapus."
+fi
