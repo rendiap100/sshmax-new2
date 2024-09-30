@@ -1,35 +1,35 @@
 #!/bin/bash
 
+# File tempat akun SSH disimpan
+DB_FILE="/etc/ssh/.ssh.db"
+
+# Cek apakah file ada
+if [ ! -f "$DB_FILE" ]; then
+  echo "File $DB_FILE tidak ditemukan!"
+  exit 1
+fi
+
 clear
 echo "TAMPILKAN INFORMASI AKUN SSH"
 echo "Silakan pilih akun yang ingin ditampilkan atau dihapus"
 echo "==============================="
 
-# Direktori tempat menyimpan akun SSH
-DIRECTORY="/var/www/html/"
+# Mengambil semua akun ssh yang dimulai dengan "#ssh#"
+clients=$(grep "^#ssh#" "$DB_FILE" | cut -d' ' -f2)
 
-# Cek apakah direktori ada
-if [ ! -d "$DIRECTORY" ]; then
-  echo "Direktori $DIRECTORY tidak ditemukan!"
-  exit 1
-fi
-
-# Mengambil semua file ssh-*.txt
-clients=$(ls "$DIRECTORY" | grep -E "^ssh-.*\.txt$")
-
-# Cek apakah ada file ssh yang ditemukan
+# Cek apakah ada akun yang ditemukan
 if [ -z "$clients" ]; then
-  echo "Tidak ada akun SSH yang ditemukan di direktori $DIRECTORY"
+  echo "Tidak ada akun SSH yang ditemukan di $DB_FILE"
   exit 1
 fi
 
-# Menampilkan daftar file .txt dengan penomoran
+# Menampilkan daftar akun dengan penomoran
 echo "$clients" | nl -s ') '
 
-# Jumlah total file SSH yang ditemukan
+# Jumlah total akun yang ditemukan
 NUMBER_OF_CLIENTS=$(echo "$clients" | wc -l)
 
-# Meminta pengguna memilih klien
+# Meminta pengguna memilih akun
 read -rp "Pilih akun SSH [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
 
 # Validasi input
@@ -46,16 +46,16 @@ fi
 # Menampilkan informasi akun SSH yang dipilih
 SELECTED_CLIENT=$(echo "$clients" | sed -n "${CLIENT_NUMBER}p")
 echo "------------------------------"
-echo "Informasi Akun SSH dari file: $SELECTED_CLIENT"
-echo "Isi file:"
-cat "$DIRECTORY$SELECTED_CLIENT"
+echo "Informasi Akun SSH:"
+grep "^#ssh# $SELECTED_CLIENT" "$DB_FILE"
 echo "------------------------------"
 
-# Tanya apakah ingin menghapus file
+# Tanya apakah ingin menghapus akun
 read -rp "Apakah Anda ingin menghapus akun ini? [y/N]: " DELETE_CONFIRMATION
 
 if [[ "$DELETE_CONFIRMATION" =~ ^[Yy]$ ]]; then
-  rm -f "$DIRECTORY$SELECTED_CLIENT"
+  # Hapus baris akun dari file .ssh.db
+  sed -i "/^#ssh# $SELECTED_CLIENT/d" "$DB_FILE"
   if [ $? -eq 0 ]; then
     echo "Akun SSH $SELECTED_CLIENT berhasil dihapus."
   else
