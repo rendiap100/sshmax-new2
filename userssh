@@ -1,6 +1,17 @@
 #!/bin/bash
 
-# File tempat akun SSH disimpan
+RED='\033[0;31m'
+NC='\033[0m'
+Lgreen='\033[92m'
+PURPLE='\033[35m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+LIGHT='\033[0;37m'
+
+# File tempat informasi akun SSH disimpan
 DB_FILE="/etc/ssh/.ssh.db"
 
 # Cek apakah file ada
@@ -9,15 +20,18 @@ if [ ! -f "$DB_FILE" ]; then
   exit 1
 fi
 
+# Mendapatkan IP
+MYIP=$(wget -qO- ipinfo.io/ip)
 clear
-echo "TAMPILKAN INFORMASI AKUN SSH"
-echo "Silakan pilih akun yang ingin ditampilkan atau dihapus"
-echo "==============================="
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo "      PENGGUNA          DATA EXP          "
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 
-# Mengambil semua akun ssh yang dimulai dengan "#ssh#"
+# Tampilkan daftar pengguna dari file .ssh.db
 clients=$(grep "^#ssh#" "$DB_FILE" | cut -d' ' -f2)
 
-# Cek apakah ada akun yang ditemukan
+# Cek apakah ada pengguna yang ditemukan
 if [ -z "$clients" ]; then
   echo "Tidak ada akun SSH yang ditemukan di $DB_FILE"
   exit 1
@@ -50,6 +64,17 @@ echo "Informasi Akun SSH:"
 grep "^#ssh# $SELECTED_CLIENT" "$DB_FILE"
 echo "------------------------------"
 
+# Tanya apakah ingin menampilkan isi akun secara detail
+read -rp "Apakah Anda ingin melihat informasi lengkap akun ini? [y/N]: " VIEW_CONFIRMATION
+
+if [[ "$VIEW_CONFIRMATION" =~ ^[Yy]$ ]]; then
+  echo "Detail akun untuk $SELECTED_CLIENT:"
+  grep "^#ssh# $SELECTED_CLIENT" "$DB_FILE"
+  echo "------------------------------"
+else
+  echo "Tidak ada informasi detail yang ditampilkan."
+fi
+
 # Tanya apakah ingin menghapus akun
 read -rp "Apakah Anda ingin menghapus akun ini? [y/N]: " DELETE_CONFIRMATION
 
@@ -64,3 +89,13 @@ if [[ "$DELETE_CONFIRMATION" =~ ^[Yy]$ ]]; then
 else
   echo "Akun SSH tidak dihapus."
 fi
+
+# Hitung jumlah total akun
+JUMLAH="$(awk -F: '$3 >= 1000 && $1 != "nobody" {print $1}' /etc/passwd | wc -l)"
+echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo -e "     Jumlah akun: $JUMLAH user"
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo -e ""
+read -n 1 -s -r -p "ENTER UNTUK KEMBALI KE MENU"
+m-sshws
