@@ -41,7 +41,7 @@ do
     echo -n > /tmp/iptrojan.txt
 
     # Ambil IP yang sesuai dengan akun dari log
-    cat /var/log/xray/access.log | grep -w "$akun" | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq > /tmp/iptrojan.txt
+    cat /var/log/xray/access.log | grep -w "$akun" | tail -n 500 | awk '{print $3}' | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq > /tmp/iptrojan.txt
 
     jum=$(cat /tmp/iptrojan.txt)
     if [[ -z "$jum" ]]; then
@@ -60,7 +60,7 @@ do
         printf "    %-13s %-7s %-8s %2s\n" "  Usage Quota : ${gb}" 
         printf "    %-13s %-7s %-8s %2s\n" "  Limit Quota : ${lim}" 
         printf "    %-13s %-7s %-8s %2s\n" "  Limit IP : $iplimit" 
-        echo "  Login IP : $(cat /tmp/iptrojan.txt | xargs)"  # Menampilkan semua IP
+        echo "  Login IP : $(cat /tmp/iptrojan.txt | grep -v 'from' | xargs)"  # Menampilkan semua IP tanpa "from"
         echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
     fi 
 
