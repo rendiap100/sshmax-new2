@@ -1,0 +1,52 @@
+#!/bin/bash
+
+clear
+echo "TAMPILKAN INFORMASI AKUN SSH"
+echo "Silakan pilih akun yang ingin ditampilkan informasinya"
+echo "==============================="
+
+# Direktori tempat menyimpan akun SSH
+DIRECTORY="/var/www/html/"
+
+# Cek apakah direktori ada
+if [ ! -d "$DIRECTORY" ]; then
+  echo "Direktori $DIRECTORY tidak ditemukan!"
+  exit 1
+fi
+
+# Mengambil semua file ssh-*.txt
+clients=$(ls "$DIRECTORY" | grep -E "^ssh-.*\.txt$")
+
+# Cek apakah ada file ssh yang ditemukan
+if [ -z "$clients" ]; then
+  echo "Tidak ada akun SSH yang ditemukan di direktori $DIRECTORY"
+  exit 1
+fi
+
+# Menampilkan daftar file .txt dengan penomoran
+echo "$clients" | nl -s ') '
+
+# Jumlah total file SSH yang ditemukan
+NUMBER_OF_CLIENTS=$(echo "$clients" | wc -l)
+
+# Meminta pengguna memilih klien
+read -rp "Pilih akun SSH [1-${NUMBER_OF_CLIENTS}]: " CLIENT_NUMBER
+
+# Validasi input
+if [[ -z "$CLIENT_NUMBER" ]]; then
+    echo "Tidak ada pilihan yang dimasukkan, keluar."
+    exit 0
+fi
+
+if ! [[ "$CLIENT_NUMBER" =~ ^[0-9]+$ ]] || [[ "$CLIENT_NUMBER" -lt 1 ]] || [[ "$CLIENT_NUMBER" -gt "$NUMBER_OF_CLIENTS" ]]; then
+    echo "Input tidak valid. Kembali ke menu SSH..."
+    exit 1
+fi
+
+# Menampilkan informasi akun SSH yang dipilih
+SELECTED_CLIENT=$(echo "$clients" | sed -n "${CLIENT_NUMBER}p")
+echo "------------------------------"
+echo "Informasi Akun SSH dari file: $SELECTED_CLIENT"
+echo "Isi file:"
+cat "$DIRECTORY$SELECTED_CLIENT"
+echo "------------------------------"
