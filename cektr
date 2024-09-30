@@ -23,52 +23,50 @@ function con() {
         echo "$(( (bytes + 1073741823)/1073741824 ))GB"
     fi
 }
+
 clear
 
 echo -n > /tmp/other.txt
 data=( `cat /etc/xray/config.json | grep '^#!' | cut -d ' ' -f 2 | sort | uniq`);
+
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
 echo -e "          CEK LOGIN AKUN TROJAN           "
 echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+
 for akun in "${data[@]}"
 do
-if [[ -z "$akun" ]]; then
-    akun="tidakada"
-fi
-echo -n > /tmp/iptrojan.txt
-data2=( `cat /var/log/xray/access.log | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq`);
-for ip in "${data2[@]}"
-do
-    jum=$(cat /var/log/xray/access.log | grep -w "$akun" | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | grep -w "$ip" | sort | uniq)
-    if [[ "$jum" = "$ip" ]]; then
-        echo "$jum" >> /tmp/iptrojan.txt
-    else
-        echo "$ip" >> /tmp/other.txt
+    if [[ -z "$akun" ]]; then
+        akun="tidakada"
     fi
+    echo -n > /tmp/iptrojan.txt
+
+    # Ambil IP yang sesuai dengan akun dari log
+    cat /var/log/xray/access.log | grep -w "$akun" | tail -n 500 | cut -d " " -f 3 | sed 's/tcp://g' | cut -d ":" -f 1 | sort | uniq > /tmp/iptrojan.txt
+
+    jum=$(cat /tmp/iptrojan.txt)
+    if [[ -z "$jum" ]]; then
+        echo > /dev/null
+    else
+        iplimit=$(cat /etc/kyt/limit/trojan/ip/${akun} 2>/dev/null || echo "Tidak ada limit IP")
+        byte=$(cat /etc/trojan/${akun} 2>/dev/null || echo 0)
+        lim=$(con ${byte})
+        wey=$(cat /etc/limit/trojan/${akun} 2>/dev/null || echo 0)
+        gb=$(con ${wey})
+        lastlogin=$(cat /var/log/xray/access.log | grep -w "$akun" | tail -n 500 | cut -d " " -f 2 | tail -1)
+
+        echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+        printf "    %-13s %-7s %-8s %2s\n" "  UserName : ${akun}"
+        printf "    %-13s %-7s %-8s %2s\n" "  Login    : $lastlogin"
+        printf "    %-13s %-7s %-8s %2s\n" "  Usage Quota : ${gb}" 
+        printf "    %-13s %-7s %-8s %2s\n" "  Limit Quota : ${lim}" 
+        printf "    %-13s %-7s %-8s %2s\n" "  Limit IP : $iplimit" 
+        echo "  Login IP : $(cat /tmp/iptrojan.txt | xargs)"  # Menampilkan semua IP
+        echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+    fi 
+
+    rm -rf /tmp/iptrojan.txt
 done
 
-jum=$(cat /tmp/iptrojan.txt)
-if [[ -z "$jum" ]]; then
-    echo > /dev/null
-else
-    iplimit=$(cat /etc/kyt/limit/trojan/ip/${akun} 2>/dev/null || echo "Tidak ada limit IP")
-    byte=$(cat /etc/trojan/${akun} 2>/dev/null || echo 0)
-    lim=$(con ${byte})
-    wey=$(cat /etc/limit/trojan/${akun} 2>/dev/null || echo 0)
-    gb=$(con ${wey})
-    lastlogin=$(cat /var/log/xray/access.log | grep -w "$akun" | tail -n 500 | cut -d " " -f 2 | tail -1)
-
-    echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
-    printf "    %-13s %-7s %-8s %2s\n" "  UserName : ${akun}"
-    printf "    %-13s %-7s %-8s %2s\n" "  Login    : $lastlogin"
-    printf "    %-13s %-7s %-8s %2s\n" "  Usage Quota : ${gb}" 
-    printf "    %-13s %-7s %-8s %2s\n" "  Limit Quota : ${lim}" 
-    printf "    %-13s %-7s %-8s %2s\n" "  Limit IP : $iplimit" 
-    echo "  Login IP : $(cat /tmp/iptrojan.txt | xargs)"  # Menampilkan semua IP
-    echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
-fi 
-rm -rf /tmp/iptrojan.txt
-done
 rm -rf /tmp/other.txt
 echo ""
 read -p "ENTER UNTUK KEMBALI KE MENU"
