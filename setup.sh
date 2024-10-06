@@ -161,8 +161,8 @@ function first_setup(){
     echo "Setup Dependencies $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
     sudo apt update -y
     apt-get install --no-install-recommends software-properties-common
-    add-apt-repository ppa:vbernat/haproxy-2.0 -y
-    apt-get -y install haproxy=2.0.\*
+    add-apt-repository ppa:vbernat/haproxy-2.3 -y
+    apt-get -y install haproxy=2.3.\*
 elif [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "debian" ]]; then
     echo "Setup Dependencies For OS Is $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
     curl https://haproxy.debian.net/bernat.debian.org.gpg |
@@ -231,12 +231,12 @@ clear
 function pasang_domain() {
 echo -e ""
 clear
-echo -e "  .==========================================."
-echo -e "   |\e[1;32mSETUP DOMAIN CLOUDFLARE \e[0m|"
-echo -e "   '=========================================='"
-echo -e "     \e[1;32m1)\e[0m Domain Pribadi"
-echo -e "     \e[1;32m2)\e[0m Domain Bawaan"
-echo -e "   =========================================="
+echo -e "${green} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${FONT}"
+echo -e "${YELLOW}» SETUP DOMAIN CLOUDFLARE ${FONT}"
+echo -e "${green} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${FONT}"
+echo -e "  [1] Domain Pribadi"
+echo -e "  [2] Domain Bawaan"
+echo -e "${green} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${FONT}"
 read -p "  Silahkan Pilih Menu Domain 1 or 2 (enter) : " host
 echo ""
 if [[ $host == "1" ]]; then
@@ -391,27 +391,23 @@ rm -rf /etc/vmess/.vmess.db
     }
 #Instal Xray
 function install_xray() {
-    clear
-    print_install "Core Xray 1.8.23 Latest Version"
+clear
+    print_install "Core Xray 1.8.21 Latest Version"
+    domainSock_dir="/run/xray";! [ -d $domainSock_dir ] && mkdir  $domainSock_dir
+    chown www-data.www-data $domainSock_dir
     
-    domainSock_dir="/run/xray"
-    if ! [ -d "$domainSock_dir" ]; then
-        mkdir "$domainSock_dir"
-    fi
-    chown www-data:www-data "$domainSock_dir"
-
-    # Install Xray dengan versi 1.8.23
-    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data --version 1.8.23
-
-    # Download file config dan service
+    # / / Ambil Xray Core Version Terbaru
+latest_version="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases | grep tag_name | sed -E 's/.*"v(.*)".*/\1/' | head -n 1)"
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data --version 1.8.21
+ 
+    # // Ambil Config Server
     wget -O /etc/xray/config.json "${REPO}config/config.json" >/dev/null 2>&1
     wget -O /etc/systemd/system/runn.service "${REPO}files/runn.service" >/dev/null 2>&1
-
+    #chmod +x /usr/local/bin/xray
     domain=$(cat /etc/xray/domain)
     IPVS=$(cat /etc/xray/ipvps)
-    print_success "Core Xray 1.8.23 installed successfully"
-}
-
+    print_success "Core Xray 1.8.21 Latest Version"
+    
     # Settings UP Nginix Server
     clear
     curl -s ipinfo.io/city >>/etc/xray/city
@@ -690,6 +686,33 @@ print_install "Menginstall Fail2ban"
 #sudo systemctl enable --now fail2ban
 #/etc/init.d/fail2ban restart
 #/etc/init.d/fail2ban status
+
+# Instal DDOS Flate
+if [ -d '/usr/local/ddos' ]; then
+	echo; echo; echo "Please un-install the previous version first"
+	exit 0
+else
+	mkdir /usr/local/ddos
+fi
+clear
+echo; echo 'Installing DOS-Deflate 0.6'; echo
+echo; echo -n 'Downloading source files...'
+wget -q -O /usr/local/ddos/ddos.conf http://www.inetbase.com/scripts/ddos/ddos.conf
+echo -n '.'
+wget -q -O /usr/local/ddos/LICENSE http://www.inetbase.com/scripts/ddos/LICENSE
+echo -n '.'
+wget -q -O /usr/local/ddos/ignore.ip.list http://www.inetbase.com/scripts/ddos/ignore.ip.list
+echo -n '.'
+wget -q -O /usr/local/ddos/ddos.sh http://www.inetbase.com/scripts/ddos/ddos.sh
+chmod 0755 /usr/local/ddos/ddos.sh
+cp -s /usr/local/ddos/ddos.sh /usr/local/sbin/ddos
+echo '...done'
+echo; echo -n 'Creating cron to run script every minute.....(Default setting)'
+/usr/local/ddos/ddos.sh --cron > /dev/null 2>&1
+echo '.....done'
+echo; echo 'Installation has completed.'
+echo 'Config file is at /usr/local/ddos/ddos.conf'
+echo 'Please send in your comments and/or suggestions to zaf@vsnl.com'
 
 clear
 # banner
