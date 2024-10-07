@@ -1,0 +1,70 @@
+#!/bin/bash
+
+# pewarna hidup
+red='\e[1;31m'
+Lgreen='\033[92m'
+PURPLE='\033[35m'
+green="\033[1;97m"
+blue="\033[1;96m"
+NC='\e[0m'
+
+# File JSON tempat akun Xray tersimpan
+XRAY_CONFIG='/etc/xray/config.json'
+
+clear
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo -e "               KUNCI/BUKA AKUN XRAY               "
+echo -e "${Lgreen}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+echo "USERNAME          EXP DATE          STATUS"
+echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+
+# Ambil semua akun dari config Xray
+cat $XRAY_CONFIG | jq -r '.inbounds[].settings.clients[] | "\(.email) \(.exp)"' > /tmp/xray_users.txt
+
+# Tampilkan semua akun Xray dengan status
+while read -r line
+do
+  AKUN=$(echo "$line" | awk '{print $1}')
+  EXP=$(echo "$line" | awk '{print $2}')
+  
+  # Status bisa disimpan di file terpisah, misalnya /etc/xray/user_status.txt
+  STATUS=$(grep -w "$AKUN" /etc/xray/user_status.txt | awk '{print $2}')
+  
+  if [[ -z "$STATUS" ]]; then
+    STATUS="UNLOCKED"
+  fi
+  
+  printf "%-17s %2s %-17s %2s \n" "  $AKUN"  "     $EXP   " "[$STATUS]"
+done < /tmp/xray_users.txt
+
+echo -e "\033[92m◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ \033[0m"
+echo -e "\033[35m◈━━━━◈◈━━━━◈ \033[0m"
+read -p " Pengguna : " username
+
+# Cek apakah pengguna ada di config.json
+if grep -q "$username" /tmp/xray_users.txt; then
+    read -p "Lock or Unlock the account? (l/u): " action
+    if [[ "$action" == "l" ]]; then
+        # Tandai sebagai locked di /etc/xray/user_status.txt
+        echo "$username LOCKED" >> /etc/xray/user_status.txt
+        echo -e "${blue}$username${NC} Sukses Di ${red}LOCKED!${NC}."
+    elif [[ "$action" == "u" ]]; then
+        # Tandai sebagai unlocked di /etc/xray/user_status.txt
+        sed -i "/$username/d" /etc/xray/user_status.txt
+        echo "$username UNLOCKED" >> /etc/xray/user_status.txt
+        echo -e "${blue}$username${NC} Sukses Di ${green}UNLOCKED!${NC}."
+    else
+        echo -e "${red}Invalid option selected.${NC}"
+    fi
+
+    # Restart Xray untuk terapkan perubahan
+    systemctl restart xray
+    echo ""
+    echo -e "${PURPLE}◈━━━━━━━━━━━━━━━━━◈◈━━━━━━━━━━━━━━━━━◈ ${NC}"
+else
+    echo -e "${red}Error: Username $username tidak ditemukan.${NC}"
+    exit 1
+fi
+
+read -n 1 -s -r -p "Tekan tombol apa saja untuk kembali ke menu"
+menu
