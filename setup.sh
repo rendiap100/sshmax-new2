@@ -395,48 +395,43 @@ function install_xray() {
     clear
     print_install "Core Xray 1.8.23 Latest Version"
     
-    # Membuat direktori domain socket jika belum ada
     domainSock_dir="/run/xray"
-    ! [ -d $domainSock_dir ] && mkdir $domainSock_dir
-    chown www-data.www-data $domainSock_dir
-    
-    # Mengambil Xray Core Version Terbaru
-    latest_version="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases | grep tag_name | sed -E 's/.*"v(.*)".*/\1/' | head -n 1)"
-    
-    # Menginstall Xray dengan versi 1.8.23
+    if ! [ -d "$domainSock_dir" ]; then
+        mkdir "$domainSock_dir"
+    fi
+    chown www-data:www-data "$domainSock_dir"
+
+    # Install Xray dengan versi 1.8.23
     bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data --version 1.8.23
- 
-    # Mengambil Config Server
+
+    # Download file config dan service
     wget -O /etc/xray/config.json "${REPO}config/config.json" >/dev/null 2>&1
     wget -O /etc/systemd/system/runn.service "${REPO}files/runn.service" >/dev/null 2>&1
-    
+
     domain=$(cat /etc/xray/domain)
     IPVS=$(cat /etc/xray/ipvps)
-    
-    print_success "Core Xray 1.8.23 Latest Version"
+    print_success "Core Xray 1.8.23 installed successfully"
+}
 
     # Settings UP Nginix Server
     clear
     curl -s ipinfo.io/city >>/etc/xray/city
     curl -s ipinfo.io/org | cut -d " " -f 2-10 >>/etc/xray/isp
     print_install "Memasang Konfigurasi Packet"
-    
     wget -O /etc/haproxy/haproxy.cfg "${REPO}config/haproxy.cfg" >/dev/null 2>&1
     wget -O /etc/nginx/conf.d/xray.conf "${REPO}config/xray.conf" >/dev/null 2>&1
     sed -i "s/xxx/${domain}/g" /etc/haproxy/haproxy.cfg
     sed -i "s/xxx/${domain}/g" /etc/nginx/conf.d/xray.conf
     curl ${REPO}config/nginx.conf > /etc/nginx/nginx.conf
+    
+cat /etc/xray/xray.crt /etc/xray/xray.key | tee /etc/haproxy/hap.pem
 
-    # Menggabungkan sertifikat dan kunci
-    cat /etc/xray/xray.crt /etc/xray/xray.key | tee /etc/haproxy/hap.pem
-
-    # Set Permission
+    # > Set Permission
     chmod +x /etc/systemd/system/runn.service
 
-    # Create Service Xray
+    # > Create Service
     rm -rf /etc/systemd/system/xray.service.d
     cat >/etc/systemd/system/xray.service <<EOF
-[Unit]
 Description=Xray Service
 Documentation=https://github.com
 After=network.target nss-lookup.target
@@ -454,12 +449,10 @@ LimitNOFILE=1000000
 
 [Install]
 WantedBy=multi-user.target
+
 EOF
-
-    # Menampilkan pesan berhasil
-    print_success "Konfigurasi Packet"
+print_success "Konfigurasi Packet"
 }
-
 
 function ssh(){
 clear
