@@ -9,6 +9,26 @@ if [ ! -f "$log_file" ]; then
   exit 1
 fi
 
-# Menampilkan log yang sudah diurutkan berdasarkan nama client (misalkan nama client ada di kolom kedua)
-echo "Log yang disusun berdasarkan nama client:"
-sort -k2 "$log_file"
+# Membuat header untuk daftar pengguna
+echo "-------------------------------------"
+echo "Daftar Pengguna dari $log_file"
+echo "-------------------------------------"
+echo -e "No\tNama Pengguna"
+
+# Inisialisasi counter
+count=1
+
+# Membaca file log dan menampilkan daftar pengguna (misalnya nama pengguna ada di kolom ke-2)
+while read -r line; do
+  # Ekstrak kolom kedua sebagai nama pengguna
+  user=$(echo "$line" | awk '{print $2}')
+
+  # Menampilkan hasil jika kolom user tidak kosong
+  if [ ! -z "$user" ]; then
+    echo -e "$count\t$user"
+    count=$((count + 1))
+  fi
+done < "$log_file"
+
+echo "-------------------------------------"
+echo "Total Pengguna: $((count - 1))"
