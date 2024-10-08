@@ -182,45 +182,35 @@ fi
 echo "### ${user} ${exp} ${uuid} ${Quota} ${iplimit}" >>/etc/trojan/.trojan.db
 curl -s --max-time $TIMES -d "chat_id=$CHATID&disable_web_page_preview=1&text=$TEXT&parse_mode=html" $URL
 clear
-# Pastikan folder tujuan ada
-mkdir -p /etc/user-create/trojan-logs/
+echo -e ""
+echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a /etc/user-create/trojan.log
+echo -e "» INFORMASI AKUN « " | tee -a /etc/user-create/trojan.log
+echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a /etc/user-create/trojan.log
+echo -e "» Domain  : ${domain}" | tee -a /etc/user-create/trojan.log
+echo -e "» Pengguna  : ${user}"  | tee -a /etc/user-create/trojan.log
+echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a /etc/user-create/trojan.log
+echo -e "» Port TLS : 443"  | tee -a /etc/user-create/trojan.log
+echo -e "» Port NTLS  : 80, 8080, 8880, 2082" | tee -a /etc/user-create/trojan.log
+echo -e "» Key  : ${uuid}"  | tee -a /etc/user-create/trojan.log
+echo -e "» Path  : /trojan-ws/multi-path" | tee -a /etc/user-create/trojan.log
+echo -e "» ServiceName  : trojan-grpc"  | tee -a /etc/user-create/trojan.log
+echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a /etc/user-create/trojan.log
+echo -e "» TROJAN TLS" | tee -a /etc/user-create/trojan.log
+echo -e "${trojanlink}"  | tee -a /etc/user-create/trojan.log
+echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a /etc/user-create/trojan.log
+echo -e "» TROJAN NTLS" | tee -a /etc/user-create/trojan.log
+echo -e "${trojanlink3}" | tee -a /etc/user-create/trojan.log
+echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a /etc/user-create/trojan.log
+echo -e "» TROJAN GRPC" | tee -a /etc/user-create/trojan.log
+echo -e "${trojanlink1}"  | tee -a /etc/user-create/trojan.log
+echo -e "${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}" | tee -a /etc/user-create/trojan.log
+echo -e "» Batas Ip  : ${iplimit} Device" | tee -a /etc/user-create/trojan.log
+echo -e "» Batas Kuota  : ${Quota} GB" | tee -a /etc/user-create/trojan.log
+echo -e "» Aktif Selama  : $masaaktif Hari" | tee -a /etc/user-create/trojan.log
+echo -e "» Tanggal Dibuat  : $tnggl" | tee -a /etc/user-create/trojan.log
+echo -e "» Tanggal Exp  : $expe" | tee -a /etc/user-create/trojan.log
+echo -e "${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}" | tee -a /etc/user-create/trojan.log
+echo ""  | tee -a /etc/user-create/trojan.log
 
-# Tentukan nama file log dengan timestamp atau nama akun
-log_file="/etc/user-create/trojan-logs/user-$(date +'%Y%m%d%H%M%S').log"
-
-echo -e "" | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a "$log_file"
-echo -e "» INFORMASI AKUN « " | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a "$log_file"
-echo -e "» Domain  : ${domain}" | tee -a "$log_file"
-echo -e "» Pengguna  : ${user}"  | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a "$log_file"
-echo -e "» Port TLS : 443"  | tee -a "$log_file"
-echo -e "» Port NTLS  : 80, 8080, 8880, 2082" | tee -a "$log_file"
-echo -e "» Key  : ${uuid}"  | tee -a "$log_file"
-#echo -e "» Xray Dns. : ${NS}" | tee -a "$log_file"
-#echo -e "» Pubkey. : ${PUB}" | tee -a "$log_file"
-echo -e "» Path  : /trojan-ws/multi-path" | tee -a "$log_file"
-echo -e "» ServiceName  : trojan-grpc"  | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a "$log_file"
-echo -e "» TROJAN TLS" | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a "$log_file"
-echo -e "${trojanlink}"  | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a "$log_file"
-echo -e "» TROJAN NTLS" | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a "$log_file"
-echo -e "${trojanlink3}" | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a "$log_file"
-echo -e "» TROJAN GRPC" | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━◈◈━━━━━◈ ${NC}" | tee -a "$log_file"
-echo -e "${trojanlink1}"  | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}" | tee -a "$log_file"
-echo -e "» Batas Ip  : ${iplimit} Device" | tee -a "$log_file"
-echo -e "» Batas Kuota  : ${Quota} GB" | tee -a "$log_file"
-echo -e "» Aktif Selama  : $masaaktif Hari" | tee -a "$log_file"
-echo -e "» Tanggal Dibuat  : $tnggl" | tee -a "$log_file"
-echo -e "» Tanggal Exp  : $expe" | tee -a "$log_file"
-echo -e "${Lgreen}◈━━━━━━━━◈◈━━━━━━━━◈ ${NC}" | tee -a "$log_file"
-echo ""  | tee -a "$log_file"
 read -p "ENTER UNTUK KEMBALI KE MENU"
 menu
