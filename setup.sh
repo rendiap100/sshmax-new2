@@ -486,8 +486,7 @@ chmod +x /etc/pam.d/commofunction install_xray() {
     domain=$(cat /etc/xray/domain)
     IPVS=$(cat /etc/xray/ipvps)
     
-    print_success "Core Xray 1.8.23 Latest Version"
-}
+    print_success "Core Xray 1.8.23 Latest Version
     
     # Settings UP Nginix Server
     clear
