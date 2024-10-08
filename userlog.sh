@@ -9,28 +9,26 @@ if [ ! -f "$log_file" ]; then
   exit 1
 fi
 
-# Membuat header untuk daftar user
+# Membuat header untuk daftar client
 echo "---------------------------------------------------------"
-echo "Daftar User dari $log_file"
+echo "Daftar Client dari $log_file"
 echo "---------------------------------------------------------"
-echo -e "No\tUser\t\tTanggal Pembuatan\tStatus"
+echo -e "No\tClient"
 
 # Inisialisasi counter
 count=1
 
-# Membaca file log dan menampilkan daftar
+# Membaca file log dan menampilkan daftar client
 while read -r line; do
   # Misalnya format user.log: user | tanggal | status
-  user=$(echo "$line" | awk '{print $1}')
-  tanggal=$(echo "$line" | awk '{print $2}')
-  status=$(echo "$line" | awk '{print $3}')
+  client=$(echo "$line" | awk '{print $1}')
 
   # Menampilkan hasil
-  echo -e "$count\t$user\t\t$tanggal\t\t$status"
+  echo -e "$count\t$client"
 
   # Increment counter
   count=$((count + 1))
 done < "$log_file"
 
 echo "---------------------------------------------------------"
-echo "Total Users: $((count - 1))"
+echo "Total Clients: $((count - 1))"
