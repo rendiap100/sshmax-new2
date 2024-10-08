@@ -13,7 +13,7 @@ fi
 echo "-------------------------------------"
 echo "Daftar Pengguna dari $log_file"
 echo "-------------------------------------"
-echo -e "No\tNama Pengguna"
+printf "%-5s %-20s\n" "No" "Nama Pengguna"
 
 # Inisialisasi counter
 count=1
@@ -25,7 +25,7 @@ while read -r line; do
 
   # Menampilkan hasil jika kolom user tidak kosong
   if [ ! -z "$user" ]; then
-    echo -e "$count\t$user"
+    printf "%-5s %-20s\n" "$count" "$user"
     count=$((count + 1))
   fi
 done < "$log_file"
