@@ -12,26 +12,27 @@ fi
 # Membaca semua client dari file log
 clients=()
 while read -r line; do
-  # Misalnya format user.log: user | domain | key | port_tls | port_ntls | path | serviceName | batas_ip | batas_kuota | aktif_selama | tanggal_dibuat | tanggal_exp
+  # Misalnya format user.log: user | domain | uuid | port_tls | port_ntls | path | serviceName | batas_ip | batas_kuota | aktif_selama | tanggal_dibuat | tanggal_exp
   clients+=("$line")
 done < "$log_file"
 
-# Menampilkan daftar client
-echo "Pilih client yang ingin ditampilkan (0 untuk semua):"
+# Menampilkan daftar nama client
+echo "Daftar nama client VMess:"
 for i in "${!clients[@]}"; do
   user=$(echo "${clients[$i]}" | awk '{print $2}')
   echo "$i) $user"
 done
 
-read -p "Masukkan nomor client: " client_choice
+read -p "Masukkan nomor client VMess yang ingin ditampilkan: " client_choice
 
 # Menampilkan informasi untuk client yang dipilih
 if [[ "$client_choice" =~ ^[0-9]+$ ]] && [ "$client_choice" -ge 0 ] && [ "$client_choice" -lt "${#clients[@]}" ]; then
   selected_client="${clients[$client_choice]}"
+  
   # Ekstrak informasi dari baris yang dipilih
   domain=$(echo "$selected_client" | awk '{print $1}')
   user=$(echo "$selected_client" | awk '{print $2}')
-  key=$(echo "$selected_client" | awk '{print $3}')
+  uuid=$(echo "$selected_client" | awk '{print $3}')
   port_tls=$(echo "$selected_client" | awk '{print $4}')
   port_ntls=$(echo "$selected_client" | awk '{print $5}')
   path=$(echo "$selected_client" | awk '{print $6}')
@@ -51,25 +52,20 @@ if [[ "$client_choice" =~ ^[0-9]+$ ]] && [ "$client_choice" -ge 0 ] && [ "$clien
   echo "◈━━━━━◈◈━━━━━◈"
   echo "» Port TLS   : $port_tls"
   echo "» Port NTLS  : $port_ntls"
-  echo "» Key        : $key"
+  echo "» UUID       : $uuid"
   echo "» Path       : $path"
   echo "» ServiceName: $serviceName"
   echo "◈━━━━━◈◈━━━━━◈"
 
-  # Menampilkan informasi Trojan
-  echo "» TROJAN TLS"
+  # Menampilkan informasi VMess
+  echo "» VMess TLS"
   echo "◈━━━━━◈◈━━━━━◈"
-  echo "trojan://$key@$domain:$port_tls?path=$path&security=tls&host=$domain&type=ws&sni=$domain#$user"
+  echo "vmess://$(echo -n "$uuid@$domain:$port_tls#${user}" | base64)"
 
   echo "◈━━━━━◈◈━━━━━◈"
-  echo "» TROJAN NTLS"
+  echo "» VMess NTLS"
   echo "◈━━━━━◈◈━━━━━◈"
-  echo "trojan://$key@$domain:80?path=$path&security=none&host=$domain&type=ws#$user"
-
-  echo "◈━━━━━◈◈━━━━━◈"
-  echo "» TROJAN GRPC"
-  echo "◈━━━━━◈◈━━━━━◈"
-  echo "trojan://$key@$domain:$port_tls?mode=gun&security=tls&type=grpc&serviceName=$serviceName&sni=$domain#$user"
+  echo "vmess://$(echo -n "$uuid@$domain:80#${user}" | base64)"
 
   echo "◈━━━━━━━━◈◈━━━━━━━━◈"
   echo "» Batas Ip    : $batas_ip"
