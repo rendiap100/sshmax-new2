@@ -161,8 +161,8 @@ function first_setup(){
     echo "Setup Dependencies $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
     sudo apt update -y
     apt-get install --no-install-recommends software-properties-common
-    add-apt-repository ppa:vbernat/haproxy-2.3 -y
-    apt-get -y install haproxy=2.3.\*
+    add-apt-repository ppa:vbernat/haproxy-2.0 -y
+    apt-get -y install haproxy=2.0.\*
 elif [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "debian" ]]; then
     echo "Setup Dependencies For OS Is $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
     curl https://haproxy.debian.net/bernat.debian.org.gpg |
@@ -231,12 +231,12 @@ clear
 function pasang_domain() {
 echo -e ""
 clear
-echo -e "${green} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${FONT}"
-echo -e "${YELLOW}» SETUP DOMAIN CLOUDFLARE ${FONT}"
-echo -e "${green} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${FONT}"
-echo -e "  [1] Domain Pribadi"
-echo -e "  [2] Domain Bawaan"
-echo -e "${green} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${FONT}"
+echo -e "  .==========================================."
+echo -e "   |\e[1;32mSETUP DOMAIN CLOUDFLARE \e[0m|"
+echo -e "   '=========================================='"
+echo -e "     \e[1;32m1)\e[0m Domain Pribadi"
+echo -e "     \e[1;32m2)\e[0m Domain Bawaan"
+echo -e "   =========================================="
 read -p "  Silahkan Pilih Menu Domain 1 or 2 (enter) : " host
 echo ""
 if [[ $host == "1" ]]; then
@@ -389,105 +389,28 @@ rm -rf /etc/vmess/.vmess.db
     echo "& plughin Account" >>/etc/ssh/.ssh.db
     echo "echo -e 'Vps Config User Account'" >> /etc/user-create/user.log
     }
-    
 #Instal Xray
 function install_xray() {
     clear
     print_install "Core Xray 1.8.23 Latest Version"
     
-    # Membuat direktori domain socket jika belum ada
     domainSock_dir="/run/xray"
-    ! [ -d $domainSock_dir ] && mkdir $domainSock_dir
-    chown www-data.www-data $domainSock_dir
-    
-    # Mengambil Xray Core Version Terbaru
-    latest_version="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases | grep tag_name | sed -E 's/.*"v(.*)".*/\1/' | head -n 1)"
-    
-    # Menginstall Xray dengan versi 1.8.23
+    if ! [ -d "$domainSock_dir" ]; then
+        mkdir "$domainSock_dir"
+    fi
+    chown www-data:www-data "$domainSock_dir"
+
+    # Install Xray dengan versi 1.8.23
     bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data --version 1.8.23
- 
-    # Mengambil Config Server
+
+    # Download file config dan service
     wget -O /etc/xray/config.json "${REPO}config/config.json" >/dev/null 2>&1
     wget -O /etc/systemd/system/runn.service "${REPO}files/runn.service" >/dev/null 2>&1
-    
+
     domain=$(cat /etc/xray/domain)
     IPVS=$(cat /etc/xray/ipvps)
-    
-    print_success "Core Xray 1.8.23 Latest Version"
+    print_success "Core Xray 1.8.23 installed successfully"
 
-    # Settings UP Nginix Server
-    clear
-    curl -s ipinfo.io/city >>/etc/xray/city
-    curl -s ipinfo.io/org | cut -d " " -f 2-10 >>/etc/xray/isp
-    print_install "Memasang Konfigurasi Packet"
-    
-    wget -O /etc/haproxy/haproxy.cfg "${REPO}config/haproxy.cfg" >/dev/null 2>&1
-    wget -O /etc/nginx/conf.d/xray.conf "${REPO}config/xray.conf" >/dev/null 2>&1
-    sed -i "s/xxx/${domain}/g" /etc/haproxy/haproxy.cfg
-    sed -i "s/xxx/${domain}/g" /etc/nginx/conf.d/xray.conf
-    curl ${REPO}config/nginx.conf > /etc/nginx/nginx.conf
-
-    # Menggabungkan sertifikat dan kunci
-    cat /etc/xray/xray.crt /etc/xray/xray.key | tee /etc/haproxy/hap.pem
-
-    # Set Permission
-    chmod +x /etc/systemd/system/runn.service
-
-    # Create Service Xray
-    rm -rf /etc/systemd/system/xray.service.d
-    cat >/etc/systemd/system/xray.service <<EOF
-[Unit]
-Description=Xray Service
-Documentation=https://github.com
-After=network.target nss-lookup.target
-
-[Service]
-User=www-data
-CapabilityBoundingSet=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
-NoNewPrivileges=true
-ExecStart=/usr/local/bin/xray run -config /etc/xray/config.json
-Restart=on-failure
-RestartPreventExitStatus=23
-LimitNPROC=10000
-LimitNOFILE=1000000
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-    # Menampilkan pesan berhasil
-    print_success "Konfigurasi Packet"
-}
-
-function ssh(){
-clear
-print_install "Memasang Password SSH"
-wget -O /etc/pam.d/common-password "${REPO}files/password"
-chmod +x /etc/pam.d/commofunction install_xray() {
-    clear
-    print_install "Core Xray 1.8.23 Latest Version"
-    
-    # Membuat direktori domain socket jika belum ada
-    domainSock_dir="/run/xray"
-    ! [ -d $domainSock_dir ] && mkdir $domainSock_dir
-    chown www-data.www-data $domainSock_dir
-    
-    # Mengambil Xray Core Version Terbaru
-    latest_version="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases | grep tag_name | sed -E 's/.*"v(.*)".*/\1/' | head -n 1)"
-    
-    # Menginstall Xray dengan versi 1.8.23
-    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data --version 1.8.23
- 
-    # Mengambil Config Server
-    wget -O /etc/xray/config.json "${REPO}config/config.json" >/dev/null 2>&1
-    wget -O /etc/systemd/system/runn.service "${REPO}files/runn.service" >/dev/null 2>&1
-    
-    domain=$(cat /etc/xray/domain)
-    IPVS=$(cat /etc/xray/ipvps)
-    
-    print_success "Core Xray 1.8.23 Latest Version
-    
     # Settings UP Nginix Server
     clear
     curl -s ipinfo.io/city >>/etc/xray/city
@@ -534,8 +457,6 @@ clear
 print_install "Memasang Password SSH"
 wget -O /etc/pam.d/common-password "${REPO}files/password"
 chmod +x /etc/pam.d/common-password
-
-    DEBIAN_FRONTENDn-password
 
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure keyboard-configuration
     debconf-set-selections <<<"keyboard-configuration keyboard-configuration/altgr select The default for the keyboard layout"
@@ -768,33 +689,6 @@ print_install "Menginstall Fail2ban"
 #sudo systemctl enable --now fail2ban
 #/etc/init.d/fail2ban restart
 #/etc/init.d/fail2ban status
-
-# Instal DDOS Flate
-if [ -d '/usr/local/ddos' ]; then
-	echo; echo; echo "Please un-install the previous version first"
-	exit 0
-else
-	mkdir /usr/local/ddos
-fi
-clear
-echo; echo 'Installing DOS-Deflate 0.6'; echo
-echo; echo -n 'Downloading source files...'
-wget -q -O /usr/local/ddos/ddos.conf http://www.inetbase.com/scripts/ddos/ddos.conf
-echo -n '.'
-wget -q -O /usr/local/ddos/LICENSE http://www.inetbase.com/scripts/ddos/LICENSE
-echo -n '.'
-wget -q -O /usr/local/ddos/ignore.ip.list http://www.inetbase.com/scripts/ddos/ignore.ip.list
-echo -n '.'
-wget -q -O /usr/local/ddos/ddos.sh http://www.inetbase.com/scripts/ddos/ddos.sh
-chmod 0755 /usr/local/ddos/ddos.sh
-cp -s /usr/local/ddos/ddos.sh /usr/local/sbin/ddos
-echo '...done'
-echo; echo -n 'Creating cron to run script every minute.....(Default setting)'
-/usr/local/ddos/ddos.sh --cron > /dev/null 2>&1
-echo '.....done'
-echo; echo 'Installation has completed.'
-echo 'Config file is at /usr/local/ddos/ddos.conf'
-echo 'Please send in your comments and/or suggestions to zaf@vsnl.com'
 
 clear
 # banner
