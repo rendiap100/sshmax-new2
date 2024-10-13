@@ -122,59 +122,60 @@ function is_root() {
 
 }
 
-# Membuat direktori dan file Xray
+# Buat direktori xray
 print_install "Membuat direktori xray"
-mkdir -p /etc/xray /var/log/xray /var/lib/kyt >/dev/null 2>&1
-curl -s ifconfig.me > /etc/xray/ipvps
-touch /etc/xray/domain /var/log/xray/access.log /var/log/xray/error.log
-chown www-data:www-data /var/log/xray
-chmod +x /var/log/xray
+    mkdir -p /etc/xray
+    curl -s ifconfig.me > /etc/xray/ipvps
+    touch /etc/xray/domain
+    mkdir -p /var/log/xray
+    chown www-data.www-data /var/log/xray
+    chmod +x /var/log/xray
+    touch /var/log/xray/access.log
+    touch /var/log/xray/error.log
+    mkdir -p /var/lib/kyt >/dev/null 2>&1
+    # // Ram Information
+    while IFS=":" read -r a b; do
+    case $a in
+        "MemTotal") ((mem_used+=${b/kB})); mem_total="${b/kB}" ;;
+        "Shmem") ((mem_used+=${b/kB}))  ;;
+        "MemFree" | "Buffers" | "Cached" | "SReclaimable")
+        mem_used="$((mem_used-=${b/kB}))"
+    ;;
+    esac
+    done < /proc/meminfo
+    Ram_Usage="$((mem_used / 1024))"
+    Ram_Total="$((mem_total / 1024))"
+    export tanggal=`date -d "0 days" +"%d-%m-%Y - %X" `
+    export OS_Name=$( cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/PRETTY_NAME//g' | sed 's/=//g' | sed 's/"//g' )
+    export Kernel=$( uname -r )
+    export Arch=$( uname -m )
+    export IP=$( curl -s https://ipinfo.io/ip/ )
 
-# Informasi RAM
-mem_info=$(awk '/MemTotal|MemFree|Buffers|Cached|SReclaimable|Shmem/ {print $1, $2}' /proc/meminfo)
-declare -A mem
-
-while read -r key value; do
-    key=${key%:}
-    mem[$key]=$value
-done <<< "$mem_info"
-
-mem_used=$((mem[MemTotal] - mem[MemFree] - mem[Buffers] - mem[Cached] - mem[SReclaimable] + mem[Shmem]))
-Ram_Usage=$((mem_used / 1024))
-Ram_Total=$((mem[MemTotal] / 1024))
-
-export tanggal=$(date +"%d-%m-%Y - %X")
-export OS_Name=$(grep -w PRETTY_NAME /etc/os-release | cut -d= -f2 | tr -d '"')
-export Kernel=$(uname -r)
-export Arch=$(uname -m)
-export IP=$(curl -s https://ipinfo.io/ip)
-
-# Fungsi setup awal
-function first_setup() {
+# Change Environment System
+function first_setup(){
     timedatectl set-timezone Asia/Jakarta
     echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
-    print_success "Directory Xray berhasil dibuat"
-
-    os_id=$(grep -w ID /etc/os-release | cut -d= -f2 | tr -d '"')
-
-    if [[ "$os_id" == "ubuntu" ]]; then
-        echo "Setup Dependencies untuk $OS_Name"
-        sudo apt update -y
-        apt-get install --no-install-recommends software-properties-common -y
-        add-apt-repository ppa:vbernat/haproxy -y  # PPA untuk HAProxy terbaru
-        apt-get -y install haproxy  # Instal versi terbaru dari PPA
-    elif [[ "$os_id" == "debian" ]]; then
-        echo "Setup Dependencies untuk $OS_Name"
-        curl -s https://haproxy.debian.net/bernat.debian.org.gpg | gpg --dearmor >/usr/share/keyrings/haproxy.debian.net.gpg
-        echo "deb [signed-by=/usr/share/keyrings/haproxy.debian.net.gpg] http://haproxy.debian.net $(lsb_release -sc)-backports main" \
-            >/etc/apt/sources.list.d/haproxy.list
-        sudo apt-get update
-        apt-get -y install haproxy  # Instal versi terbaru
-    else
-        echo -e "OS Anda tidak didukung ($OS_Name)"
-        exit 1
-    fi
+    print_success "Directory Xray"
+    if [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "ubuntu" ]]; then
+    echo "Setup Dependencies $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
+    sudo apt update -y
+    apt-get install --no-install-recommends software-properties-common
+    add-apt-repository ppa:vbernat/haproxy-2.0 -y
+    apt-get -y install haproxy=2.0.\*
+elif [[ $(cat /etc/os-release | grep -w ID | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/ID//g') == "debian" ]]; then
+    echo "Setup Dependencies For OS Is $(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g')"
+    curl https://haproxy.debian.net/bernat.debian.org.gpg |
+        gpg --dearmor >/usr/share/keyrings/haproxy.debian.net.gpg
+    echo deb "[signed-by=/usr/share/keyrings/haproxy.debian.net.gpg]" \
+        http://haproxy.debian.net buster-backports-1.8 main \
+        >/etc/apt/sources.list.d/haproxy.list
+    sudo apt-get update
+    apt-get -y install haproxy=1.8.\*
+else
+    echo -e " Your OS Is Not Supported ($(cat /etc/os-release | grep -w PRETTY_NAME | head -n1 | sed 's/=//g' | sed 's/"//g' | sed 's/PRETTY_NAME//g') )"
+    exit 1
+fi
 }
 
 # GEO PROJECT
@@ -230,12 +231,12 @@ clear
 function pasang_domain() {
 echo -e ""
 clear
-echo -e "${green} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${FONT}"
-echo -e "${YELLOW}» SETUP DOMAIN CLOUDFLARE ${FONT}"
-echo -e "${green} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${FONT}"
-echo -e "  [1] Domain Pribadi"
-echo -e "  [2] Domain Bawaan"
-echo -e "${green} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ ${FONT}"
+echo -e "  .==========================================."
+echo -e "   |\e[1;32mSETUP DOMAIN CLOUDFLARE \e[0m|"
+echo -e "   '=========================================='"
+echo -e "     \e[1;32m1)\e[0m Domain Pribadi"
+echo -e "     \e[1;32m2)\e[0m Domain Bawaan"
+echo -e "   =========================================="
 read -p "  Silahkan Pilih Menu Domain 1 or 2 (enter) : " host
 echo ""
 if [[ $host == "1" ]]; then
@@ -388,62 +389,58 @@ rm -rf /etc/vmess/.vmess.db
     echo "& plughin Account" >>/etc/ssh/.ssh.db
     echo "echo -e 'Vps Config User Account'" >> /etc/user-create/user.log
     }
-    
-# Fungsi untuk menginstal Xray Core versi terbaru
+#Instal Xray
 function install_xray() {
     clear
-    print_install "Menginstal Xray Core Versi Terbaru"
+    print_install "Installing the Latest Version of Xray Core"
 
-    # Membuat direktori socket domain jika belum ada
+    # Direktori untuk domain socket
     domainSock_dir="/run/xray"
     if ! [ -d "$domainSock_dir" ]; then
         mkdir -p "$domainSock_dir"
-        chown www-data:www-data "$domainSock_dir"
+    fi
+    chown www-data:www-data "$domainSock_dir"
+
+    # Install Xray versi terbaru
+    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data
+
+    # Validasi variabel REPO
+    if [ -z "$REPO" ]; then
+        echo "Error: REPO variable is not set."
+        exit 1
     fi
 
-    # Mendapatkan versi terbaru Xray Core dari GitHub API
-    latest_version=$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | \
-                     grep '"tag_name"' | sed -E 's/.*"v(.*)".*/\1/')
-    print_install "Versi terbaru Xray: $latest_version"
+    # Unduh file config dan service
+    wget -q -O /etc/xray/config.json "${REPO}config/config.json" || { echo "Error: Failed to download config.json"; exit 1; }
+    wget -q -O /etc/systemd/system/runn.service "${REPO}files/runn.service" || { echo "Error: Failed to download runn.service"; exit 1; }
 
-    # Instal Xray menggunakan versi terbaru
-    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" \
-        @ install -u www-data --version "$latest_version"
+    # Reload dan aktifkan service
+    systemctl daemon-reload
+    systemctl enable runn.service
+    systemctl start runn.service
 
-    # Mengunduh konfigurasi server
-    wget -qO /etc/xray/config.json "${REPO}config/config.json"
-    wget -qO /etc/systemd/system/runn.service "${REPO}files/runn.service"
+    # Informasi domain dan IP
+    domain=$(cat /etc/xray/domain 2>/dev/null || echo "Not set")
+    IPVS=$(cat /etc/xray/ipvps 2>/dev/null || echo "Not set")
 
-    # Memastikan file domain dan IP tersedia
-    domain=$(cat /etc/xray/domain || echo "domain_not_set")
-    IPVS=$(cat /etc/xray/ipvps || echo "ip_not_set")
-
-    print_success "Instalasi Xray Core Versi $latest_version Selesai"
+    print_success "Xray Core installed successfully."
+    echo "Domain: $domain"
+    echo "IP VPS: $IPVS"
 }
 
-# Fungsi untuk mengatur server Nginx dan HAProxy
-function setup_nginx_haproxy() {
+
+    # Settings UP Nginix Server
     clear
-    print_install "Mengatur Konfigurasi Paket"
-
-    # Mengambil informasi lokasi dan ISP
-    curl -s ipinfo.io/city > /etc/xray/city
-    curl -s ipinfo.io/org | cut -d " " -f 2-10 > /etc/xray/isp
-
-    # Mengunduh konfigurasi HAProxy dan Nginx
-    wget -qO /etc/haproxy/haproxy.cfg "${REPO}config/haproxy.cfg"
-    wget -qO /etc/nginx/conf.d/xray.conf "${REPO}config/xray.conf"
-    curl -s "${REPO}config/nginx.conf" > /etc/nginx/nginx.conf
-
-    # Mengganti placeholder "xxx" dengan domain yang diatur
+    curl -s ipinfo.io/city >>/etc/xray/city
+    curl -s ipinfo.io/org | cut -d " " -f 2-10 >>/etc/xray/isp
+    print_install "Memasang Konfigurasi Packet"
+    wget -O /etc/haproxy/haproxy.cfg "${REPO}config/haproxy.cfg" >/dev/null 2>&1
+    wget -O /etc/nginx/conf.d/xray.conf "${REPO}config/xray.conf" >/dev/null 2>&1
     sed -i "s/xxx/${domain}/g" /etc/haproxy/haproxy.cfg
     sed -i "s/xxx/${domain}/g" /etc/nginx/conf.d/xray.conf
-
-    # Membuat file sertifikat gabungan untuk HAProxy
-    cat /etc/xray/xray.crt /etc/xray/xray.key > /etc/haproxy/hap.pem
-
-    print_success "Konfigurasi Paket Berhasil Diterapkan"
-}
+    curl ${REPO}config/nginx.conf > /etc/nginx/nginx.conf
+    
+cat /etc/xray/xray.crt /etc/xray/xray.key | tee /etc/haproxy/hap.pem
 
     # > Set Permission
     chmod +x /etc/systemd/system/runn.service
@@ -471,7 +468,7 @@ WantedBy=multi-user.target
 
 EOF
 print_success "Konfigurasi Packet"
-
+}
 
 function ssh(){
 clear
@@ -546,61 +543,31 @@ sed -i 's/AcceptEnv/#AcceptEnv/g' /etc/ssh/sshd_config
 print_success "Password SSH"
 }
 
-function udp_mini() {
-    clear
-    print_install "Memasang Service Limit IP & Quota"
+function udp_mini(){
+clear
+print_install "Memasang Service Limit IP & Quota"
+wget -q https://raw.githubusercontent.com/rendiap100/sshmax-new2/main/config/fv-tunnel && chmod +x fv-tunnel && ./fv-tunnel
 
-    # Mengunduh dan menjalankan fv-tunnel
-    wget -q https://raw.githubusercontent.com/rendiap100/sshmax-new2/main/config/fv-tunnel -O fv-tunnel
-    chmod +x fv-tunnel && ./fv-tunnel
-
-    # Instalasi UDP Mini
-    mkdir -p /usr/local/kyt/
-    wget -q -O /usr/local/kyt/udp-mini "${REPO}files/udp-mini"
-    chmod +x /usr/local/kyt/udp-mini
-
-    # Loop untuk menginstal dan mengaktifkan service UDP Mini
-    for i in {1..3}; do
-        service_name="udp-mini-$i"
-        wget -q -O /etc/systemd/system/${service_name}.service "${REPO}files/${service_name}.service"
-
-        # Restart untuk memastikan service dalam keadaan bersih
-        systemctl stop ${service_name} 2>/dev/null
-        systemctl disable ${service_name} 2>/dev/null
-        systemctl enable ${service_name}
-        systemctl start ${service_name}
-    done
-
-    # Mengaktifkan firewall untuk limit IP
-    setup_firewall_limit
-
-    print_success "Limit IP Service Berhasil Dipasang"
-}
-
-# Fungsi untuk mengatur firewall limit IP agar lebih akurat
-function setup_firewall_limit() {
-    print_install "Mengonfigurasi Firewall IP Limit"
-
-    # Pastikan iptables-persistent terpasang untuk menyimpan konfigurasi iptables
-    apt-get install -y iptables-persistent
-
-    # Menghapus aturan lama untuk memastikan konfigurasi bersih
-    iptables -F
-    iptables -X
-    ip6tables -F
-    ip6tables -X
-
-    # Aturan limit: Maksimum 10 koneksi per IP dalam interval 1 menit (disesuaikan sesuai kebutuhan)
-    iptables -A INPUT -p udp --dport 443 -m connlimit --connlimit-above 10 -j REJECT --reject-with icmp-port-unreachable
-
-    # Aturan rate limit: Membatasi request dari satu IP (maks 20 paket per detik)
-    iptables -A INPUT -p udp --dport 443 -m limit --limit 20/second --limit-burst 25 -j ACCEPT
-    iptables -A INPUT -p udp --dport 443 -j DROP
-
-    # Menyimpan aturan firewall agar tetap berlaku setelah reboot
-    netfilter-persistent save
-
-    print_success "Konfigurasi Firewall IP Limit Berhasil"
+# // Installing UDP Mini
+mkdir -p /usr/local/kyt/
+wget -q -O /usr/local/kyt/udp-mini "${REPO}files/udp-mini"
+chmod +x /usr/local/kyt/udp-mini
+wget -q -O /etc/systemd/system/udp-mini-1.service "${REPO}files/udp-mini-1.service"
+wget -q -O /etc/systemd/system/udp-mini-2.service "${REPO}files/udp-mini-2.service"
+wget -q -O /etc/systemd/system/udp-mini-3.service "${REPO}files/udp-mini-3.service"
+systemctl disable udp-mini-1
+systemctl stop udp-mini-1
+systemctl enable udp-mini-1
+systemctl start udp-mini-1
+systemctl disable udp-mini-2
+systemctl stop udp-mini-2
+systemctl enable udp-mini-2
+systemctl start udp-mini-2
+systemctl disable udp-mini-3
+systemctl stop udp-mini-3
+systemctl enable udp-mini-3
+systemctl start udp-mini-3
+print_success "Limit IP Service"
 }
 
 function ssh_slow(){
@@ -740,33 +707,6 @@ print_install "Menginstall Fail2ban"
 #sudo systemctl enable --now fail2ban
 #/etc/init.d/fail2ban restart
 #/etc/init.d/fail2ban status
-
-# Instal DDOS Flate
-if [ -d '/usr/local/ddos' ]; then
-	echo; echo; echo "Please un-install the previous version first"
-	exit 0
-else
-	mkdir /usr/local/ddos
-fi
-clear
-echo; echo 'Installing DOS-Deflate 0.6'; echo
-echo; echo -n 'Downloading source files...'
-wget -q -O /usr/local/ddos/ddos.conf http://www.inetbase.com/scripts/ddos/ddos.conf
-echo -n '.'
-wget -q -O /usr/local/ddos/LICENSE http://www.inetbase.com/scripts/ddos/LICENSE
-echo -n '.'
-wget -q -O /usr/local/ddos/ignore.ip.list http://www.inetbase.com/scripts/ddos/ignore.ip.list
-echo -n '.'
-wget -q -O /usr/local/ddos/ddos.sh http://www.inetbase.com/scripts/ddos/ddos.sh
-chmod 0755 /usr/local/ddos/ddos.sh
-cp -s /usr/local/ddos/ddos.sh /usr/local/sbin/ddos
-echo '...done'
-echo; echo -n 'Creating cron to run script every minute.....(Default setting)'
-/usr/local/ddos/ddos.sh --cron > /dev/null 2>&1
-echo '.....done'
-echo; echo 'Installation has completed.'
-echo 'Config file is at /usr/local/ddos/ddos.conf'
-echo 'Please send in your comments and/or suggestions to zaf@vsnl.com'
 
 clear
 # banner
