@@ -391,44 +391,23 @@ rm -rf /etc/vmess/.vmess.db
     }
 #Instal Xray
 function install_xray() {
-    clear
-    print_install "Installing the Latest Version of Xray Core"
-
-    # Direktori untuk domain socket
-    domainSock_dir="/run/xray"
-    if ! [ -d "$domainSock_dir" ]; then
-        mkdir -p "$domainSock_dir"
-    fi
-    chown www-data:www-data "$domainSock_dir"
-
-    # Install Xray versi terbaru
-    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data
-
-    # Validasi variabel REPO
-    if [ -z "$REPO" ]; then
-        echo "Error: REPO variable is not set."
-        exit 1
-    fi
-
-    # Unduh file config dan service
-    wget -q -O /etc/xray/config.json "${REPO}config/config.json" || { echo "Error: Failed to download config.json"; exit 1; }
-    wget -q -O /etc/systemd/system/runn.service "${REPO}files/runn.service" || { echo "Error: Failed to download runn.service"; exit 1; }
-
-    # Reload dan aktifkan service
-    systemctl daemon-reload
-    systemctl enable runn.service
-    systemctl start runn.service
-
-    # Informasi domain dan IP
-    domain=$(cat /etc/xray/domain 2>/dev/null || echo "Not set")
-    IPVS=$(cat /etc/xray/ipvps 2>/dev/null || echo "Not set")
-
-    print_success "Xray Core installed successfully."
-    echo "Domain: $domain"
-    echo "IP VPS: $IPVS"
-}
-
-
+clear
+    print_install "Core Xray 1.8.1 Latest Version"
+    domainSock_dir="/run/xray";! [ -d $domainSock_dir ] && mkdir  $domainSock_dir
+    chown www-data.www-data $domainSock_dir
+    
+    # / / Ambil Xray Core Version Terbaru
+latest_version="$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases | grep tag_name | sed -E 's/.*"v(.*)".*/\1/' | head -n 1)"
+bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data --version $latest_version
+ 
+    # // Ambil Config Server
+    wget -O /etc/xray/config.json "${REPO}config/config.json" >/dev/null 2>&1
+    wget -O /etc/systemd/system/runn.service "${REPO}files/runn.service" >/dev/null 2>&1
+    #chmod +x /usr/local/bin/xray
+    domain=$(cat /etc/xray/domain)
+    IPVS=$(cat /etc/xray/ipvps)
+    print_success "Core Xray 1.8.1 Latest Version"
+    
     # Settings UP Nginix Server
     clear
     curl -s ipinfo.io/city >>/etc/xray/city
@@ -468,7 +447,7 @@ WantedBy=multi-user.target
 
 EOF
 print_success "Konfigurasi Packet"
-
+}
 
 function ssh(){
 clear
