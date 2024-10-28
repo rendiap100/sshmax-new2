@@ -389,7 +389,7 @@ rm -rf /etc/vmess/.vmess.db
     echo "& plughin Account" >>/etc/ssh/.ssh.db
     echo "echo -e 'Vps Config User Account'" >> /etc/user-create/user.log
     }
-#Instal Xray
+# Install Xray
 function install_xray() {
     clear
     print_install "Core Xray 1.8.23 Version"
@@ -403,11 +403,17 @@ function install_xray() {
     # Retrieve Server Config
     wget -O /etc/xray/config.json "${REPO}config/config.json" >/dev/null 2>&1
     wget -O /etc/systemd/system/runn.service "${REPO}files/runn.service" >/dev/null 2>&1
-    
+
+    # Set up domain and IP
     domain=$(cat /etc/xray/domain)
     IPVS=$(cat /etc/xray/ipvps)
-    print_success "Core Xray 1.8.23 Installed Successfully"
     
+    # Create and set permissions for ipvps.conf
+    sudo touch /var/lib/kyt/ipvps.conf
+    sudo chmod 644 /var/lib/kyt/ipvps.conf
+
+    print_success "Core Xray 1.8.23 Installed Successfully"
+    }
     # Settings UP Nginix Server
     clear
     curl -s ipinfo.io/city >>/etc/xray/city
