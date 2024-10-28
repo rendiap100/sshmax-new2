@@ -413,7 +413,7 @@ function install_xray() {
     sudo chmod 644 /var/lib/kyt/ipvps.conf
 
     print_success "Core Xray 1.8.23 Installed Successfully"
-    }
+    
     # Settings UP Nginix Server
     clear
     curl -s ipinfo.io/city >>/etc/xray/city
