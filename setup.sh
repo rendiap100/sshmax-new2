@@ -229,32 +229,36 @@ function base_package() {
 clear
 # Fungsi input domain
 function pasang_domain() {
-echo -e ""
-clear
-echo -e "  .==========================================."
-echo -e "   |\e[1;32mSETUP DOMAIN CLOUDFLARE \e[0m|"
-echo -e "   '=========================================='"
-echo -e "     \e[1;32m1)\e[0m Domain Pribadi"
-echo -e "     \e[1;32m2)\e[0m Domain Bawaan"
-echo -e "   =========================================="
-read -p "  Silahkan Pilih Menu Domain 1 or 2 (enter) : " host
-echo ""
-if [[ $host == "1" ]]; then
-echo -e "   \e[1;32mMasukan Domain Anda ! $NC"
-read -p "   Subdomain: " host1
-echo "IP=" >> /var/lib/kyt/ipvps.conf
-echo $host1 > /etc/xray/domain
-echo $host1 > /root/domain
-echo ""
-elif [[ $host == "2" ]]; then
-#install cf
-wget ${REPO}files/cf.sh && chmod +x cf.sh && ./cf.sh
-rm -f /root/cf.sh
-clear
-else
-print_install "Random Subdomain/Domain is Used"
-clear
-    fi
+  echo -e ""
+  clear
+  echo -e "  .==========================================."
+  echo -e "   |\e[1;32mSETUP DOMAIN CLOUDFLARE \e[0m|"
+  echo -e "   '=========================================='"
+  echo -e "     \e[1;32m1)\e[0m Domain Pribadi"
+  echo -e "     \e[1;32m2)\e[0m Domain Bawaan"
+  echo -e "   =========================================="
+  
+  # Menunggu input selama 10 detik dan set default ke "2" jika tidak ada input
+  read -t 10 -p "  Silahkan Pilih Menu Domain 1 atau 2 (enter default: 2): " host
+  host=${host:-2}  # Set default ke 2 jika tidak ada input
+
+  echo ""
+  if [[ $host == "1" ]]; then
+    echo -e "   \e[1;32mMasukan Domain Anda! $NC"
+    read -p "   Subdomain: " host1
+    echo "IP=" >> /var/lib/kyt/ipvps.conf
+    echo $host1 > /etc/xray/domain
+    echo $host1 > /root/domain
+    echo ""
+  elif [[ $host == "2" ]]; then
+    # install cf
+    wget ${REPO}files/cf.sh && chmod +x cf.sh && ./cf.sh
+    rm -f /root/cf.sh
+    clear
+  else
+    echo "Random Subdomain/Domain is Used"
+    clear
+  fi
 }
 
 clear
