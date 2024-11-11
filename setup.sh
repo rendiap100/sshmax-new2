@@ -423,7 +423,6 @@ function install_xray() {
     IPVS=$(cat /etc/xray/ipvps || echo "ip_not_set")
 
     print_success "Instalasi Xray Core Versi $latest_version Selesai"
-}
 
 # Fungsi untuk mengatur server Nginx dan HAProxy
 function setup_nginx_haproxy() {
