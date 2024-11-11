@@ -393,44 +393,61 @@ rm -rf /etc/vmess/.vmess.db
     echo "& plughin Account" >>/etc/ssh/.ssh.db
     echo "echo -e 'Vps Config User Account'" >> /etc/user-create/user.log
     }
-# Install Xray
+# Fungsi untuk menginstal Xray Core versi terbaru
 function install_xray() {
     clear
-    print_install "Core Xray 1.8.23 Version"
-    domainSock_dir="/run/xray"; ! [ -d $domainSock_dir ] && mkdir $domainSock_dir
-    chown www-data.www-data $domainSock_dir
-    
-    # Install Xray Core Version 1.8.23
-    specific_version="1.8.23"
-    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install -u www-data --version $specific_version
- 
-    # Retrieve Server Config
-    wget -O /etc/xray/config.json "${REPO}config/config.json" >/dev/null 2>&1
-    wget -O /etc/systemd/system/runn.service "${REPO}files/runn.service" >/dev/null 2>&1
+    print_install "Menginstal Xray Core Versi Terbaru"
 
-    # Set up domain and IP
-    domain=$(cat /etc/xray/domain)
-    IPVS=$(cat /etc/xray/ipvps)
-    
-    # Create and set permissions for ipvps.conf
-    sudo touch /var/lib/kyt/ipvps.conf
-    sudo chmod 644 /var/lib/kyt/ipvps.conf
+    # Membuat direktori socket domain jika belum ada
+    domainSock_dir="/run/xray"
+    if ! [ -d "$domainSock_dir" ]; then
+        mkdir -p "$domainSock_dir"
+        chown www-data:www-data "$domainSock_dir"
+    fi
 
-    print_success "Core Xray 1.8.23 Installed Successfully"
-    
-    # Settings UP Nginix Server
+    # Mendapatkan versi terbaru Xray Core dari GitHub API
+    latest_version=$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | \
+                     grep '"tag_name"' | sed -E 's/.*"v(.*)".*/\1/')
+    print_install "Versi terbaru Xray: $latest_version"
+
+    # Instal Xray menggunakan versi terbaru
+    bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" \
+        @ install -u www-data --version "$latest_version"
+
+    # Mengunduh konfigurasi server
+    wget -qO /etc/xray/config.json "${REPO}config/config.json"
+    wget -qO /etc/systemd/system/runn.service "${REPO}files/runn.service"
+
+    # Memastikan file domain dan IP tersedia
+    domain=$(cat /etc/xray/domain || echo "domain_not_set")
+    IPVS=$(cat /etc/xray/ipvps || echo "ip_not_set")
+
+    print_success "Instalasi Xray Core Versi $latest_version Selesai"
+}
+
+# Fungsi untuk mengatur server Nginx dan HAProxy
+function setup_nginx_haproxy() {
     clear
-    curl -s ipinfo.io/city >>/etc/xray/city
-    curl -s ipinfo.io/org | cut -d " " -f 2-10 >>/etc/xray/isp
-    print_install "Memasang Konfigurasi Packet"
-    wget -O /etc/haproxy/haproxy.cfg "${REPO}config/haproxy.cfg" >/dev/null 2>&1
-    wget -O /etc/nginx/conf.d/xray.conf "${REPO}config/xray.conf" >/dev/null 2>&1
+    print_install "Mengatur Konfigurasi Paket"
+
+    # Mengambil informasi lokasi dan ISP
+    curl -s ipinfo.io/city > /etc/xray/city
+    curl -s ipinfo.io/org | cut -d " " -f 2-10 > /etc/xray/isp
+
+    # Mengunduh konfigurasi HAProxy dan Nginx
+    wget -qO /etc/haproxy/haproxy.cfg "${REPO}config/haproxy.cfg"
+    wget -qO /etc/nginx/conf.d/xray.conf "${REPO}config/xray.conf"
+    curl -s "${REPO}config/nginx.conf" > /etc/nginx/nginx.conf
+
+    # Mengganti placeholder "xxx" dengan domain yang diatur
     sed -i "s/xxx/${domain}/g" /etc/haproxy/haproxy.cfg
     sed -i "s/xxx/${domain}/g" /etc/nginx/conf.d/xray.conf
-    curl ${REPO}config/nginx.conf > /etc/nginx/nginx.conf
-    
-cat /etc/xray/xray.crt /etc/xray/xray.key | tee /etc/haproxy/hap.pem
 
+    # Membuat file sertifikat gabungan untuk HAProxy
+    cat /etc/xray/xray.crt /etc/xray/xray.key > /etc/haproxy/hap.pem
+
+    print_success "Konfigurasi Paket Berhasil Diterapkan"
+}
     # > Set Permission
     chmod +x /etc/systemd/system/runn.service
 
