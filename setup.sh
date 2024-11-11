@@ -423,7 +423,7 @@ function install_xray() {
     IPVS=$(cat /etc/xray/ipvps || echo "ip_not_set")
 
     print_success "Instalasi Xray Core Versi $latest_version Selesai"
-
+}
 # Fungsi untuk mengatur server Nginx dan HAProxy
 function setup_nginx_haproxy() {
     clear
@@ -446,7 +446,7 @@ function setup_nginx_haproxy() {
     cat /etc/xray/xray.crt /etc/xray/xray.key > /etc/haproxy/hap.pem
 
     print_success "Konfigurasi Paket Berhasil Diterapkan"
-}
+
     # > Set Permission
     chmod +x /etc/systemd/system/runn.service
 
