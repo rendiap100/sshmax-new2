@@ -33,8 +33,6 @@ function first_setup() {
     timedatectl set-timezone Asia/Jakarta
     echo iptables-persistent iptables-persistent/autosave_v4 boolean true | debconf-set-selections
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | debconf-set-selections
-    apt-get install software-properties-common -y
-    add-apt-repository universe -y || true
 }
 
 function nginx_install() {
@@ -44,7 +42,7 @@ function nginx_install() {
 function base_package() {
     apt update -y
     DEBIAN_FRONTEND=noninteractive apt install -y \
-        zip unzip curl sudo figlet wget lsb-release gnupg2 \
+        zip unzip curl sudo figlet wget \
         iptables iptables-persistent netfilter-persistent
 }
 
