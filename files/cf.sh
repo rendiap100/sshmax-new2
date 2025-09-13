@@ -12,8 +12,8 @@ echo ""
 
 # Generate random subdomain name
 RANDOM_SUB=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1)
-DOMAIN="sshmaxnew.my.id"
-SUB_DOMAIN="${RANDOM_SUB}.sshmaxnew.my.id"
+DOMAIN="sshmaxid2.my.id"
+SUB_DOMAIN="${RANDOM_SUB}.sshmaxid2.my.id"
 CF_ID="rendiap100@gmail.com"
 CF_KEY="2ce0b48ecb650a119639825cc486d5ac4e211"
 set -euo pipefail
