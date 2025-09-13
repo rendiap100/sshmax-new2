@@ -15,7 +15,7 @@ RANDOM_SUB=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1)
 DOMAIN="sshmaxid2.my.id"
 SUB_DOMAIN="${RANDOM_SUB}.sshmaxid2.my.id"
 CF_ID="rendiap100@gmail.com"
-CF_KEY="2ce0b48ecb650a119639825cc486d5ac4e211"
+CF_KEY="2fb7fff5b1e332953b31afbae5a1a2914dd1c"
 set -euo pipefail
 IP=$(curl -sS ifconfig.me)
 
