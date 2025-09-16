@@ -468,7 +468,6 @@ WantedBy=multi-user.target
 
 EOF
 print_success "Konfigurasi Packet"
-}
 
 function ssh(){
 clear
