@@ -426,8 +426,6 @@ function install_xray() {
     print_success "Xray Core installed successfully."
     echo "Domain: $domain"
     echo "IP VPS: $IPVS"
-}
-
 
     # Settings UP Nginix Server
     clear
@@ -468,6 +466,7 @@ WantedBy=multi-user.target
 
 EOF
 print_success "Konfigurasi Packet"
+}
 
 function ssh(){
 clear
