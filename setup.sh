@@ -394,60 +394,48 @@ function install_xray() {
     clear
     print_install "Menginstal Xray Core Versi Terbaru"
 
-    # Membuat direktori socket domain jika belum ada
     domainSock_dir="/run/xray"
     if ! [ -d "$domainSock_dir" ]; then
         mkdir -p "$domainSock_dir"
         chown www-data:www-data "$domainSock_dir"
     fi
 
-    # Mendapatkan versi terbaru Xray Core dari GitHub API
-    latest_version=$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest | \
-                     grep '"tag_name"' | sed -E 's/.*"v(.*)".*/\1/')
+    latest_version=$(curl -s https://api.github.com/repos/XTLS/Xray-core/releases/latest \
+                     | grep '"tag_name"' | sed -E 's/.*"v(.*)".*/\1/')
     print_install "Versi terbaru Xray: $latest_version"
 
-    # Instal Xray menggunakan versi terbaru
     bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" \
         @ install -u www-data --version "$latest_version"
 
-    # Mengunduh konfigurasi server
     wget -qO /etc/xray/config.json "${REPO}config/config.json"
     wget -qO /etc/systemd/system/runn.service "${REPO}files/runn.service"
 
-    # Memastikan file domain dan IP tersedia
-    domain=$(cat /etc/xray/domain || echo "domain_not_set")
-    IPVS=$(cat /etc/xray/ipvps || echo "ip_not_set")
+    domain=$(cat /etc/xray/domain 2>/dev/null || echo "domain_not_set")
+    IPVS=$(cat /etc/xray/ipvps 2>/dev/null || echo "ip_not_set")
 
     print_success "Instalasi Xray Core Versi $latest_version Selesai"
 }
 
-# Fungsi untuk mengatur server Nginx dan HAProxy
 function setup_nginx_haproxy() {
     clear
     print_install "Mengatur Konfigurasi Paket"
 
-    # Mengambil informasi lokasi dan ISP
     curl -s ipinfo.io/city > /etc/xray/city
     curl -s ipinfo.io/org | cut -d " " -f 2-10 > /etc/xray/isp
 
-    # Mengunduh konfigurasi HAProxy dan Nginx
     wget -qO /etc/haproxy/haproxy.cfg "${REPO}config/haproxy.cfg"
     wget -qO /etc/nginx/conf.d/xray.conf "${REPO}config/xray.conf"
     curl -s "${REPO}config/nginx.conf" > /etc/nginx/nginx.conf
 
-    # Mengganti placeholder "xxx" dengan domain yang diatur
     sed -i "s/xxx/${domain}/g" /etc/haproxy/haproxy.cfg
     sed -i "s/xxx/${domain}/g" /etc/nginx/conf.d/xray.conf
 
-    # Membuat file sertifikat gabungan untuk HAProxy
     cat /etc/xray/xray.crt /etc/xray/xray.key > /etc/haproxy/hap.pem
 
     print_success "Konfigurasi Paket Berhasil Diterapkan"
 
-    # > Set Permission
     chmod +x /etc/systemd/system/runn.service
 
-    # > Create Service
     rm -rf /etc/systemd/system/xray.service.d
     cat >/etc/systemd/system/xray.service <<EOF
 Description=Xray Service
@@ -467,9 +455,8 @@ LimitNOFILE=1000000
 
 [Install]
 WantedBy=multi-user.target
-
 EOF
-print_success "Konfigurasi Packet"
+    print_success "Konfigurasi Packet"
 }
 
 function ssh(){
