@@ -443,7 +443,6 @@ function setup_nginx_haproxy() {
     cat /etc/xray/xray.crt /etc/xray/xray.key > /etc/haproxy/hap.pem
 
     print_success "Konfigurasi Paket Berhasil Diterapkan"
-}
 
     # > Set Permission
     chmod +x /etc/systemd/system/runn.service
